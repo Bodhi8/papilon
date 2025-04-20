@@ -1,6 +1,6 @@
-# Papilon 🦋
+# Papillon 🦋
 
-**Papilon** is a Python library for exploring the statistical mechanics of complex systems. Inspired by the butterfly effect and chaos theory, Papilon enables researchers and data scientists to simulate, analyze, and optimize dynamic systems through entropy modeling, causal inference, and scenario generation.
+**Papillon** is a Python library for exploring the statistical mechanics of complex systems. Inspired by the butterfly effect and chaos theory, Papilon enables researchers and data scientists to simulate, analyze, and optimize dynamic systems through entropy modeling, causal inference, and scenario generation.
 
 <p align="center">
   <img src="lorenz_attractor.png" alt="Lorenz Attractor - Butterfly Effect" width="500"/>
@@ -30,7 +30,7 @@ pip install -e .
 ## 🚀 Example Usage
 
 ```python
-from papilon import (
+from papillon import (
     shannon_entropy,
     simulate_kde_scenarios,
     analyze_relationships,
