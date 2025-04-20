@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "papilon"
+version = "0.1.0"
+description = "Papilon: A Statistical Mechanics Framework for Causal Data Simulation"
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+dependencies = [
+  "numpy",
+  "pandas",
+  "scikit-learn",
+  "seaborn",
+  "matplotlib",
+  "networkx"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["papilon*"]
+exclude = ["tests*", "examples*"]

@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: papilon
+Version: 0.1.0
+Summary: Papilon: A Statistical Mechanics Framework for Causal Data Simulation
+Author-email: Your Name <you@example.com>
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: seaborn
+Requires-Dist: matplotlib
+Requires-Dist: networkx
