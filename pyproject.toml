@@ -4,11 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papilon"
-version = "0.1.0"
+version = "0.2.0"
 description = "Papilon: A Statistical Mechanics Framework for Causal Data Simulation"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+
 authors = [
-  { name = "Your Name", email = "you@example.com" }
+  { name = "Brian Curry", email = "0.1.vectorlabs@gmail.com" }
 ]
+
 dependencies = [
   "numpy",
   "pandas",
