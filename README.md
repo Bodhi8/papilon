@@ -20,7 +20,7 @@
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/papilon.git
+git clone https://github.com/Bodhi8/papilon.git
 cd papilon
 pip install -e .
 ```
