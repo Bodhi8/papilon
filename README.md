@@ -2,7 +2,11 @@
 
 **Papilon** is a Python library for exploring the statistical mechanics of complex systems. Inspired by the butterfly effect and chaos theory, Papilon enables researchers and data scientists to simulate, analyze, and optimize dynamic systems through entropy modeling, causal inference, and scenario generation.
 
-![Butterfly Effect](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Lorenz_system_r28_s10_b2-6666.png/600px-Lorenz_system_r28_s10_b2-6666.png)
+<p align="center">
+  <img src="lorenz_attractor.png" alt="Lorenz Attractor - Butterfly Effect" width="500"/>
+</p>
+
+<p align="center"><em>“Does the flap of a butterfly’s wings in Brazil set off a tornado in Texas?” — Edward Lorenz</em></p>
 
 ## ✨ Features
 
