@@ -50,7 +50,11 @@ See [`examples/`](examples/) for a full end-to-end complex systems notebook.
 
 ## 🧪 Example Output
 
-![Sample causal graph](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Simple_dag.svg/500px-Simple_dag.svg.png)
+<p align="center">
+  <img src="sample_causal_graph.png" alt="Sample Causal Graph" width="500"/>
+</p>
+
+<p align="center"><em>Example: A simple directed acyclic graph (DAG) used in causal inference.</em></p>
 
 ## 📝 License
 
