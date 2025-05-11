@@ -58,7 +58,8 @@ See [`examples/`](examples/) for a full end-to-end complex systems notebook.
 
 ## 📝 License
 
-MIT License
+Apache License 2.0 © 2025 Vector1 Research
+
 
 ---
 
