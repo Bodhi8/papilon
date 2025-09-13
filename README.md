@@ -1,6 +1,6 @@
 # Papilon 🦋
 
-**Papilon** is a Python library for exploring the statistical mechanics of complex systems. Created and developed by Brian Curry and inspired by the butterfly effect and chaos theory, Papilon enables researchers and data scientists to simulate, analyze, and optimize dynamic systems through entropy modeling, causal inference, and scenario generation.
+**Papilon**(Papillon was taken) is a Python library for exploring the statistical mechanics of complex systems. Created and developed by Brian Curry and inspired by the butterfly effect and chaos theory, Papilon enables researchers and data scientists to simulate, analyze, and optimize dynamic systems through entropy modeling, causal inference, and scenario generation.
 
 <p align="center">
   <img src="lorenz_attractor.png" alt="Lorenz Attractor - Butterfly Effect" width="500"/>
