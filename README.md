@@ -56,7 +56,6 @@ See [`examples/`](examples/) for a full end-to-end complex systems notebook.
 
 <p align="center"><em>Example: A simple directed acyclic graph (DAG) used in causal inference.</em></p>
 
-marketing mix modeling, MMM, Bayesian, causal inference, marketing optimization, media mix modeling, data geometry, Vector1 Research
 
 ## 📝 License
 
@@ -66,3 +65,5 @@ Apache License 2.0 © 2025 Vector1 Research
 ---
 
 _Developed with curiosity and chaos in mind._
+
+marketing mix modeling, MMM, Bayesian, causal inference, marketing optimization, media mix modeling, data geometry, Vector1 Research
