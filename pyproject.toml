@@ -4,26 +4,125 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papilon"
-version = "0.2.0"
-description = "Papilon: A Statistical Mechanics Framework for Causal Data Simulation"
+version = "2.0.0"
+description = "Papilon: Advanced Marketing Mix Modeling, Causal Inference, Economic Systems & Complex Adaptive Systems Framework"
 readme = "README.md"
-license = { text = "MIT" }
-requires-python = ">=3.8"
+license = { text = "Proprietary - All Rights Reserved" }
+requires-python = ">=3.9"
+keywords = [
+    "marketing mix modeling", "MMM", "causal inference", "bayesian",
+    "complex systems", "agent-based modeling", "economics",
+    "media optimization", "econometrics", "simulation"
+]
 
 authors = [
-  { name = "Brian Curry", email = "0.1.vectorlabs@gmail.com" }
+    { name = "Brian Curry", email = "0.1.vectorlabs@gmail.com" }
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Private :: Do Not Upload",
 ]
 
 dependencies = [
-  "numpy",
-  "pandas",
-  "scikit-learn",
-  "seaborn",
-  "matplotlib",
-  "networkx"
+    # Core scientific stack
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    
+    # Machine learning & statistics
+    "scikit-learn>=1.3",
+    "statsmodels>=0.14",
+    
+    # Bayesian inference
+    "pymc>=5.10",
+    "arviz>=0.17",
+    
+    # Graphs & networks
+    "networkx>=3.0",
+    
+    # Visualization
+    "matplotlib>=3.7",
+    "seaborn>=0.13",
+    
+    # Optimization
+    "optuna>=3.5",
+    
+    # Utilities
+    "tqdm>=4.65",
+    "joblib>=1.3",
 ]
+
+[project.optional-dependencies]
+gpu = [
+    "jax[cuda12_pip]>=0.4.20",
+    "numpyro>=0.13",
+]
+causal = [
+    "dowhy>=0.11",
+    "econml>=0.14",
+    "causalml>=0.15",
+]
+agents = [
+    "mesa>=3.0",
+]
+sensitivity = [
+    "SALib>=1.4",
+]
+orchestrator = [
+    "anthropic>=0.18",
+    "openai>=1.12",
+]
+full = [
+    "papilon[gpu,causal,agents,sensitivity,orchestrator]",
+    "plotly>=5.18",
+    "pyarrow>=14.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "ruff>=0.1",
+    "mypy>=1.0",
+    "pre-commit>=3.0",
+]
+
+[project.urls]
+Homepage = "https://papilon.ai"
+Documentation = "https://docs.papilon.ai"
+Repository = "https://github.com/Bodhi8/papilon"
+Issues = "https://github.com/Bodhi8/papilon/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["papilon*"]
-exclude = ["tests*", "examples*"]
+exclude = ["tests*", "examples*", "docs*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "I", "N", "D", "UP"]
+ignore = ["D100", "D104"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=papilon --cov-report=term-missing"
