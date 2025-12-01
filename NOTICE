@@ -1,0 +1,63 @@
+PAPILON
+Copyright (c) 2024-2025 Brian Curry / Vector1 Research
+All Rights Reserved.
+
+================================================================================
+NOTICE
+================================================================================
+
+This product includes software developed by Brian Curry / Vector1 Research.
+
+Papilon is a proprietary software framework for Marketing Mix Modeling, 
+Causal Inference, and Complex Systems Analysis. This software is protected 
+by copyright law and international treaties.
+
+UNAUTHORIZED REPRODUCTION OR DISTRIBUTION OF THIS SOFTWARE, OR ANY PORTION 
+OF IT, MAY RESULT IN SEVERE CIVIL AND CRIMINAL PENALTIES, AND WILL BE 
+PROSECUTED TO THE MAXIMUM EXTENT POSSIBLE UNDER THE LAW.
+
+================================================================================
+TRADEMARKS
+================================================================================
+
+"Papilon" and the Papilon logo are trademarks of Brian Curry / Vector1 Research.
+"Vector1" and "Vector1 Research" are trademarks of Brian Curry.
+
+These trademarks may not be used without prior written permission.
+
+================================================================================
+THIRD-PARTY COMPONENTS
+================================================================================
+
+This software incorporates concepts and methodologies inspired by open-source
+projects. The original implementations have been independently created and do
+not incorporate any third-party code directly. However, we acknowledge the
+following projects for their pioneering work in the field:
+
+- NumPy, SciPy, Pandas: BSD License
+- PyMC: Apache 2.0 License
+- NetworkX: BSD License
+- Matplotlib, Seaborn: BSD/MIT License
+- Scikit-learn: BSD License
+
+None of the above projects' code is directly included in Papilon. All 
+implementations are original works created by Vector1 Research.
+
+================================================================================
+PATENT NOTICE
+================================================================================
+
+Papilon may be covered by one or more pending patent applications. Use of this
+software may require a license under applicable patents. Contact 
+legal@vector1.ai for patent licensing information.
+
+================================================================================
+CONTACT
+================================================================================
+
+Brian Curry / Vector1 Research
+Website: https://vector1.ai
+Email: legal@vector1.ai
+
+For licensing: licensing@vector1.ai
+For support: support@vector1.ai
