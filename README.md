@@ -16,7 +16,7 @@
 
 ---
 
-##  What is Papilon?
+## 🦋 What is Papilon?
 
 **Papilon** (French for "butterfly") is the most comprehensive Python framework for Marketing Mix Modeling, Causal Inference, and Complex Systems Analysis. Named after the butterfly effect, it captures how small changes in marketing spend can cascade into significant business outcomes.
 
@@ -36,7 +36,7 @@
 
 ---
 
-##  Quick Start
+## 🚀 Quick Start
 
 ### Installation
 
@@ -145,7 +145,7 @@ causal_effect = sc.estimate_effect()
 
 ---
 
-##  Architecture
+## 📦 Architecture
 
 ```
 papilon/
@@ -171,7 +171,7 @@ papilon/
 │   ├── interventions.py    # do-calculus
 │   └── refutation.py       # Robustness checks
 │
-├── orchestrator/           #  Autonomous Agents
+├── orchestrator/           # 🆕 Autonomous Agents
 │   ├── base.py             # Agent framework
 │   ├── agents.py           # MMMAgent, CausalAgent
 │   ├── tools.py            # Tool library
@@ -205,7 +205,7 @@ papilon/
 
 ---
 
-##  Autonomous Agent Framework
+## 🤖 Autonomous Agent Framework
 
 Papilon 2.0 introduces a revolutionary **autonomous agent framework** that can automate your entire MMM workflow:
 
@@ -238,7 +238,7 @@ Papilon 2.0 introduces a revolutionary **autonomous agent framework** that can a
 
 ---
 
-##  Use Cases
+## 📊 Use Cases
 
 ### 1. Media Planning & Budget Optimization
 ```python
@@ -286,7 +286,7 @@ shock_impact = io.shock_analysis(sector="advertising", shock=-0.1)
 
 ---
 
-##  Configuration
+## 🔧 Configuration
 
 ### Environment Variables
 
@@ -322,7 +322,7 @@ model = pp.BayesianMMM(
 
 ---
 
-##  Performance
+## 📈 Performance
 
 - **GPU Acceleration**: JAX/NumPyro backend for 10-100x speedup
 - **Parallel Workflows**: Execute independent steps concurrently
@@ -331,7 +331,7 @@ model = pp.BayesianMMM(
 
 ---
 
-##  Enterprise Features
+## 🛡️ Enterprise Features
 
 - **Audit Logging**: Track all model changes and decisions
 - **Role-Based Access**: Control who can modify models
@@ -340,7 +340,7 @@ model = pp.BayesianMMM(
 
 ---
 
-##  Documentation
+## 📚 Documentation
 
 - [Full Documentation](https://papilon.ai/docs)
 - [API Reference](https://papilon.ai/api)
@@ -349,7 +349,7 @@ model = pp.BayesianMMM(
 
 ---
 
-##  Support
+## 🤝 Support
 
 - **Enterprise Support**: support@vector1.ai
 - **Issues**: GitHub Issues (private repo)
@@ -357,7 +357,7 @@ model = pp.BayesianMMM(
 
 ---
 
-##  License
+## 📄 License
 
 **Proprietary License** - All rights reserved.
 
@@ -367,7 +367,7 @@ This software is proprietary and confidential. Unauthorized copying, distributio
 
 ---
 
-##  Acknowledgments
+## 🙏 Acknowledgments
 
 Built with insights from:
 - Google Meridian
