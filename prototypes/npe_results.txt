@@ -1,0 +1,37 @@
+Simulating training set...
+gradient check (max rel err): 8.42e-10
+Training NPE network...
+  epoch   0  train NLL/sample   1.257   val NLL   0.199
+  epoch   5  train NLL/sample  -3.104   val NLL  -3.024
+  epoch  10  train NLL/sample  -3.998   val NLL  -3.827
+  epoch  15  train NLL/sample  -4.378   val NLL  -4.209
+  epoch  20  train NLL/sample  -4.570   val NLL  -4.478
+  epoch  25  train NLL/sample  -4.726   val NLL  -4.536
+  epoch  30  train NLL/sample  -4.810   val NLL  -4.653
+  epoch  35  train NLL/sample  -4.916   val NLL  -4.649
+  epoch  39  train NLL/sample  -4.982   val NLL  -4.790
+
+80% interval coverage on held-out sims (target 0.80):
+   alpha  0.808
+   k      0.842
+   beta   0.804
+   sigma  0.799
+
+Learned proposal on the 'real' panel (truth in brackets):
+   alpha    0.581   [0.55]
+   k        2.811   [3.0]
+   beta     2.160   [2.2]
+   sigma    0.381   [0.35]
+   learned corr(log k, log beta) = +0.93   (oracle posterior: +0.93)
+
+GATE: ESS/n = 0.3193  ->  ACCEPT
+final posterior (mean ± sd):
+   alpha    0.572 ± 0.054   [truth 0.55]
+   k        2.664 ± 0.299   [truth 3.0]
+   beta     2.112 ± 0.131   [truth 2.2]
+   sigma    0.372 ± 0.024   [truth 0.35]
+
+End-to-end: simulator -> trained network -> proposal -> gate.
+This is the RFC's inference path with a real learned component;
+scaling it means replacing summaries with the factorized panel
+encoder and the Gaussian head with a flow (RFC sections 2.1/2.3).
