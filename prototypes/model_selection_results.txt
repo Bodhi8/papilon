@@ -1,0 +1,35 @@
+Fitting stand-in amortized proposals (one-time, per family)...
+truth: DELAYED adstock, peak lag = 2.0, 130 weeks
+
+
+=== Scenario 1 — head correct (P_DELAY=0.9) ===
+   amortized head P(m):   M_GEO=0.10  M_DELAY=0.90
+   log evidence:          M_GEO=-73.5  M_DELAY=-53.5
+   log Bayes factor (DELAY vs GEO): +20.0
+   corrected P(m | D):    M_GEO=0.000  M_DELAY=1.000
+   M_GEO    ESS/n=0.731 -> ACCEPT
+   M_DELAY  ESS/n=0.654 -> ACCEPT
+   winning family M_DELAY: peak lag posterior = 2.09 ± 0.14  (truth 2.0)
+
+=== Scenario 2 — head wrong (P_GEO=0.9): Bayes factor must override ===
+   amortized head P(m):   M_GEO=0.90  M_DELAY=0.10
+   log evidence:          M_GEO=-73.5  M_DELAY=-53.5
+   log Bayes factor (DELAY vs GEO): +20.0
+   corrected P(m | D):    M_GEO=0.000  M_DELAY=1.000
+   M_GEO    ESS/n=0.639 -> ACCEPT
+   M_DELAY  ESS/n=0.651 -> ACCEPT
+   winning family M_DELAY: peak lag posterior = 2.08 ± 0.15  (truth 2.0)
+
+=== Scenario 3 — head uniform (0.5 / 0.5) ===
+   amortized head P(m):   M_GEO=0.50  M_DELAY=0.50
+   log evidence:          M_GEO=-73.5  M_DELAY=-53.5
+   log Bayes factor (DELAY vs GEO): +20.0
+   corrected P(m | D):    M_GEO=0.000  M_DELAY=1.000
+   M_GEO    ESS/n=0.666 -> ACCEPT
+   M_DELAY  ESS/n=0.622 -> ACCEPT
+   winning family M_DELAY: peak lag posterior = 2.08 ± 0.15  (truth 2.0)
+
+Property demonstrated: the discrete head, like the continuous
+proposals in prototype 1, is advisory. Marginal-likelihood
+estimates from the same importance weights correct the model
+choice, and per-family ESS gates the continuous posteriors.
