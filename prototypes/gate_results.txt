@@ -1,0 +1,35 @@
+ESS-gated importance refinement — prototype
+true theta: {'alpha': 0.55, 'k': 3.0, 'beta': 2.2, 'sigma': 0.35}   |   panel: 120 weeks
+
+[GOOD]  ESS/n = 0.7053  ->  ACCEPT
+   reweighted amortized draws (asymptotically exact)
+   param     truth   post mean   post sd
+   alpha     0.550       0.571     0.053 
+   k         3.000       2.657     0.291 
+   beta      2.200       2.106     0.127 
+   sigma     0.350       0.373     0.025 
+
+[MEDIOCRE]  ESS/n = 0.0307  ->  REFINE
+   short MCMC seeded at proposal (accept rate 35%)
+   param     truth   post mean   post sd
+   alpha     0.550       0.570     0.054 
+   k         3.000       2.678     0.359 
+   beta      2.200       2.118     0.152 
+   sigma     0.350       0.375     0.024 
+
+[BAD]  ESS/n = 0.0007  ->  ESCALATE
+   full MCMC from weak prior; episode logged as simulator gap (accept rate 21%)
+   param     truth   post mean   post sd
+   alpha     0.550       0.577     0.056 
+   k         3.000       2.670     0.316 
+   beta      2.200       2.114     0.138 
+   sigma     0.350       0.376     0.027 
+
+Summary:
+   GOOD      ESS/n=0.7053  ACCEPT
+   MEDIOCRE  ESS/n=0.0307  REFINE
+   BAD       ESS/n=0.0007  ESCALATE
+
+The single scalar ESS/n routed all three regimes correctly:
+good proposals get exactness for free, mediocre ones get cheap
+refinement, and misspecified ones fail loudly into full inference.

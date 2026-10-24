@@ -1,383 +1,145 @@
-# Papilon 2.0
+# Papilon
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.0-blue.svg" alt="Version">
-  <img src="https://img.shields.io/badge/python-3.10+-green.svg" alt="Python">
-  <img src="https://img.shields.io/badge/license-Proprietary-red.svg" alt="License">
+  <img src="https://img.shields.io/badge/version-0.3.0-blue.svg" alt="Version 0.3.0">
+  <img src="https://img.shields.io/badge/python-3.10+-green.svg" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg" alt="Apache 2.0 license">
 </p>
 
-<p align="center">
-  <strong>The Unified Python Framework for Causal Media Modeling, Economic Systems & Complex Adaptive Systems</strong>
-</p>
+<p align="center"><em>"Does the flap of a butterfly's wings in Brazil set off a tornado in Texas?" Edward Lorenz</em></p>
 
-<p align="center">
-  <em>"Does the flap of a butterfly's wings in Brazil set off a tornado in Texas?" — Edward Lorenz</em>
-</p>
+Papilon (French for butterfly) is a Python library for marketing mix modeling and for
+studying how small changes move complex systems. Version 0.3.0 adds a Bayesian marketing
+mix model that chooses its own carryover shape by Bayes factor and reports when its
+posterior can't be trusted. It also includes the statistical-mechanics and simulation
+tools first released in 0.2.0.
 
----
-
-## 🦋 What is Papilon?
-
-**Papilon** (French for "butterfly") is the most comprehensive Python framework for Marketing Mix Modeling, Causal Inference, and Complex Systems Analysis. Named after the butterfly effect, it captures how small changes in marketing spend can cascade into significant business outcomes.
-
-### Why Papilon?
-
-| Feature | Meridian | PyMC-Marketing | Robyn | **Papilon** |
-|---------|----------|----------------|-------|-------------|
-| Bayesian MMM | ✅ | ✅ | ❌ | ✅ |
-| Causal Discovery | ❌ | ❌ | ❌ | ✅ |
-| Causal Inference | ❌ | ❌ | ❌ | ✅ |
-| Agent-Based Modeling | ❌ | ❌ | ❌ | ✅ |
-| Economic I-O Models | ❌ | ❌ | ❌ | ✅ |
-| Complex Systems | ❌ | ❌ | ❌ | ✅ |
-| **Autonomous Agents** | ❌ | ❌ | ❌ | ✅ |
-| **Workflow Automation** | ❌ | ❌ | ❌ | ✅ |
-| Python Native | ✅ | ✅ | ❌ (R) | ✅ |
-
----
-
-## 🚀 Quick Start
-
-### Installation
+## Install
 
 ```bash
 pip install papilon
 ```
 
-### Marketing Mix Modeling
+## Quickstart: a marketing mix model with a known truth
+
+`make_synthetic_mmm()` creates three years of weekly sales for a brand running four
+digital channels, and returns the parameters that generated it, so you can check every
+estimate against the truth.
 
 ```python
 import papilon as pp
 
-# Quick MMM Analysis
+df, truth = pp.make_synthetic_mmm()
+
 model = pp.MMM(
     data=df,
-    target="revenue",
-    media=["tv_spend", "digital_spend", "radio_spend"],
-    date_col="date"
-)
-model.fit()
-
-# Get ROI estimates
-rois = model.get_roi()
-print(rois)
-
-# Optimize budget
-optimal = model.optimize_budget(total=1_000_000)
-print(optimal)
-```
-
-### Autonomous Agent (NEW in 2.0!)
-
-```python
-from papilon.orchestrator import MMMAgent
-
-# Create an AI-powered agent
-agent = MMMAgent(llm="claude")
-
-# Natural language interface
-results = agent.run("""
-    Load my marketing data,
-    fit an MMM model with TV, Digital, and Radio channels,
-    optimize budget for $2M quarterly spend,
-    and generate a report with visualizations.
-""", data="marketing_data.csv")
-
-# Or use quick analysis
-results = agent.quick_analysis(
-    data="data.csv",
-    target_col="revenue",
-    media_cols=["tv", "digital", "radio"],
-    total_budget=2_000_000
-)
-```
-
-### Full Automation
-
-```python
-from papilon.orchestrator import AutoMMM
-
-# Create automated MMM system
-auto = AutoMMM(
-    data_source="marketing_data.csv",
-    target="revenue",
-    media_channels=["tv", "digital", "radio"]
+    target="sales",
+    media=["paid_search", "paid_social", "online_video", "display"],
+    date_col="date",
+    controls=["price_index", "promo"],
+    yearly_seasonality=2,
+    seed=11,
 )
 
-# Configure automation
-auto.set_retraining_schedule("0 9 * * 1")  # Weekly Monday 9am
-auto.set_performance_threshold("mape", max_value=0.15)
-auto.set_data_trigger(min_new_rows=7)
+# Does online video's effect peak after the week it runs? Let the data decide.
+families = model.compare_carryover({
+    "all_geometric": [],
+    "video_delayed": ["online_video"],
+})
 
-# Add notifications
-from papilon.orchestrator import SlackNotifier
-auto.add_notifier(SlackNotifier(webhook_url="..."))
-
-# Start continuous automation
-auto.start()
+roi = model.get_roi()                                   # ROAS with 90% intervals
+plan = model.optimize_budget(total=df[model.media].sum(axis=1).mean())
 ```
 
-### Causal Discovery & Inference
+Output from `examples/mmm_quickstart.py`, abridged (spend and sales in $ thousands):
+
+```
+               log_evidence  log_bayes_factor_vs_best  probability  ess_fraction verdict
+all_geometric       241.223                    -18.72          0.0         0.134  ACCEPT
+video_delayed       259.943                      0.00          1.0         0.197  ACCEPT
+
+                spend  roas_mean  roas_p05  roas_p95  mroas_mean  true_roas
+paid_search   4729.95       0.64      0.03      1.65        0.32       1.25
+paid_social   7678.08       1.02      0.47      1.79        0.49       1.50
+online_video  7369.53       1.76      1.50      2.05        0.88       1.57
+display       3497.10       0.71      0.08      1.68        0.35       0.74
+```
+
+The model picks the delayed carryover shape for online video and puts its peak at 2.0
+weeks, the true value. Every true ROAS falls inside its 90% interval. The point
+estimates for paid search and paid social are low: search spend in this dataset follows
+seasonal demand, which makes it hard to separate from seasonality with three years of
+weekly data. That is the job lift tests do, and calibration to experiments is on the
+roadmap.
+
+## How the model is fit
+
+`pp.MMM` follows the inference path in
+[RFC 001, amortized structural inference](papilon-amortized-inference-design.md):
+
+1. **Proposal.** A distribution over the media parameters (carryover, saturation,
+   effect size). In 0.3.0, a Laplace fit at the posterior mode stands in for the
+   trained amortized network the RFC describes.
+2. **Importance sampling** against the exact posterior. Baseline, trend, seasonality,
+   controls and noise are integrated out in closed form, so sampling covers only the
+   media parameters.
+3. **Effective-sample-size gate.** If the proposal matches the posterior well, it is
+   accepted. If not, it is refined from the weighted draws and tried again, or the fit
+   is escalated. `model.gate_results` records every step.
+4. **Bayes factors.** The same importance weights estimate each family's marginal
+   likelihood, so `compare_carryover()` can choose between geometric and delayed
+   adstock per channel.
+
+Channel effects are constrained to be positive. The single-channel prototypes behind
+this design, with their results, are in [`prototypes/`](prototypes/).
+
+## Other tools (from 0.2.0)
 
 ```python
 import papilon as pp
 
-# Discover causal structure
-dag = pp.discover_causal_structure(df, method="pc")
-
-# Estimate causal effects
-effect = pp.estimate_effect(
-    df,
-    treatment="marketing_spend",
-    outcome="sales",
-    method="backdoor"
-)
-
-# Synthetic control for geo experiments
-sc = pp.SyntheticControl(
-    treated_unit="California",
-    control_units=["Texas", "Florida", "New York"],
-    treatment_time="2024-01-01"
-)
-sc.fit(panel_data)
-causal_effect = sc.estimate_effect()
+pp.shannon_entropy(values)                               # information content
+pp.simulate_kde_scenarios(df, columns, n_samples=1000)   # scenario simulation
+pp.analyze_relationships(df, target="sales")             # correlation and mutual information
+pp.infer_causal_structure(df, threshold=0.01)            # pairwise dependency screen
+pp.grid_search_optimize(df, feature_ranges, objective_fn, constraints)
 ```
 
----
+`infer_causal_structure` tests each pair of variables for a significant linear
+relationship. It is a screen for dependencies, not causal discovery: it does not orient
+edges or adjust for confounders.
 
-## 📦 Architecture
+The notebook `Papilon_Marketing_Optimization_Workflow.ipynb` walks through these tools.
 
-```
-papilon/
-├── core/                    # Foundation modules
-│   ├── entropy.py          # Information theory
-│   ├── energy.py           # Statistical mechanics
-│   ├── states.py           # State space analysis
-│   ├── relationships.py    # Correlation analysis
-│   └── topology.py         # Network topology
-│
-├── mmm/                    # Marketing Mix Modeling
-│   ├── transforms/         # Adstock & saturation
-│   ├── models/             # Bayesian & frequentist
-│   ├── decomposition.py    # Channel attribution
-│   ├── response_curves.py  # Marginal response
-│   ├── calibration.py      # Lift test integration
-│   └── budget_optimizer.py # SLSQP optimization
-│
-├── causal/                 # Causal Inference
-│   ├── discovery/          # PC, FCI, GES, NOTEARS
-│   ├── effects/            # ATE, CATE, ITT, LATE
-│   ├── methods/            # DiD, synthetic control, RDD, IV
-│   ├── interventions.py    # do-calculus
-│   └── refutation.py       # Robustness checks
-│
-├── orchestrator/           # 🆕 Autonomous Agents
-│   ├── base.py             # Agent framework
-│   ├── agents.py           # MMMAgent, CausalAgent
-│   ├── tools.py            # Tool library
-│   ├── workflows.py        # DAG pipelines
-│   └── automation.py       # AutoMMM, triggers, monitors
-│
-├── economics/              # Economic Modeling
-│   ├── io_model.py         # Leontief I-O
-│   ├── multipliers.py      # Economic multipliers
-│   └── shock_analysis.py   # Shock propagation
-│
-├── dynamics/               # Complex Systems
-│   ├── attractors.py       # Fixed points, chaos
-│   ├── bifurcation.py      # Parameter sensitivity
-│   └── stability.py        # Lyapunov exponents
-│
-├── agents/                 # Agent-Based Modeling
-│   ├── base.py             # Agent class
-│   ├── model.py            # ABM model
-│   └── space.py            # Grid, network, continuous
-│
-├── sensitivity/            # Sensitivity Analysis
-│   ├── sobol.py            # Sobol indices
-│   └── morris.py           # Morris screening
-│
-└── viz/                    # Visualization
-    ├── dag.py              # Causal graphs
-    ├── response.py         # Response curves
-    └── decomposition.py    # Waterfall charts
-```
-
----
-
-## 🤖 Autonomous Agent Framework
-
-Papilon 2.0 introduces a revolutionary **autonomous agent framework** that can automate your entire MMM workflow:
-
-### Features
-
-- **Natural Language Interface**: Describe tasks in plain English
-- **LLM Integration**: Works with Claude, GPT-4, or local models
-- **Tool-Based Architecture**: Extensible with custom tools
-- **Workflow Orchestration**: DAG-based pipeline execution
-- **Event-Driven Automation**: Triggers, monitors, and alerts
-- **Human-in-the-Loop**: Approval steps when needed
-
-### Agent Types
-
-| Agent | Purpose |
-|-------|---------|
-| `MMMAgent` | Marketing Mix Modeling automation |
-| `CausalAgent` | Causal discovery and inference |
-| `AgentOrchestrator` | Multi-agent coordination |
-
-### Automation Components
-
-| Component | Purpose |
-|-----------|---------|
-| `Workflow` | DAG-based pipeline definition |
-| `AutoMMM` | Fully automated MMM system |
-| `DataTrigger` | Retrain on new data |
-| `PerformanceMonitor` | Track model metrics |
-| `SlackNotifier` | Send alerts to Slack |
-
----
-
-## 📊 Use Cases
-
-### 1. Media Planning & Budget Optimization
-```python
-# Optimize $10M annual budget across channels
-optimal = model.optimize_budget(
-    total=10_000_000,
-    constraints={
-        "tv": (1_000_000, 5_000_000),
-        "digital": (2_000_000, 6_000_000),
-    }
-)
-```
-
-### 2. Incrementality Testing
-```python
-# Analyze geo-lift experiment
-effect = pp.difference_in_differences(
-    data=geo_data,
-    treatment_group="test_markets",
-    control_group="holdout_markets",
-    treatment_time="2024-06-01"
-)
-```
-
-### 3. Scenario Planning
-```python
-# What-if analysis
-scenarios = [
-    {"name": "Cut TV 20%", "changes": {"tv": -0.2}},
-    {"name": "Double Digital", "changes": {"digital": 1.0}},
-]
-
-for scenario in scenarios:
-    impact = agent.scenario(scenario["name"], scenario["changes"])
-    print(f"{scenario['name']}: {impact['total_revenue_change_pct']:.1f}%")
-```
-
-### 4. Economic Impact Analysis
-```python
-# Input-Output modeling
-io = pp.InputOutputModel(transaction_matrix)
-multipliers = io.calculate_multipliers()
-shock_impact = io.shock_analysis(sector="advertising", shock=-0.1)
-```
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
+## Tests
 
 ```bash
-# LLM API Keys (for agent features)
-export ANTHROPIC_API_KEY="sk-..."
-export OPENAI_API_KEY="sk-..."
-
-# Optional: GPU acceleration
-export JAX_PLATFORM_NAME="gpu"
+pip install -e ".[dev]"
+pytest -m "not slow"     # about 30 seconds
+pytest                   # includes the full Bayes-factor recovery test, a few minutes
 ```
 
-### Model Configuration
+## Roadmap
 
-```python
-model = pp.BayesianMMM(
-    # Adstock configuration
-    adstock_type="weibull",  # geometric, weibull, delayed
-    adstock_max_lag=8,
-    
-    # Saturation configuration
-    saturation_type="hill",  # hill, logistic, tanh
-    
-    # Priors
-    roi_prior="informative",  # informative, weakly_informative, flat
-    
-    # Inference
-    n_samples=2000,
-    n_chains=4,
-    target_accept=0.9,
-)
+These are planned and **not in the released package**:
+
+- The trained amortized network from RFC 001 in place of the Laplace proposal
+- Calibration to lift tests and geo experiments
+- Geo-level models with partial pooling
+- Weibull adstock and logistic saturation
+- Causal discovery and effect estimation beyond the dependency screen
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+## Citation
+
+If you use Papilon in research, please cite:
+
+```
+Curry, B. (2026). Papilon: Bayesian marketing mix modeling with gated importance
+sampling (Version 0.3.0). https://github.com/Bodhi8/papilon
 ```
 
----
-
-## 📈 Performance
-
-- **GPU Acceleration**: JAX/NumPyro backend for 10-100x speedup
-- **Parallel Workflows**: Execute independent steps concurrently
-- **Incremental Updates**: Update models with new data efficiently
-- **Memory Efficient**: Streaming for large datasets
-
----
-
-## 🛡️ Enterprise Features
-
-- **Audit Logging**: Track all model changes and decisions
-- **Role-Based Access**: Control who can modify models
-- **Deployment Ready**: Docker, Kubernetes support
-- **API Server**: REST API for integration
-
----
-
-## 📚 Documentation
-
-- [Full Documentation](https://papilon.ai/docs)
-- [API Reference](https://papilon.ai/api)
-- [Tutorials](https://papilon.ai/tutorials)
-- [Examples](./examples/)
-
----
-
-## 🤝 Support
-
-- **Enterprise Support**: support@vector1.ai
-- **Issues**: GitHub Issues (private repo)
-- **Consulting**: Available for custom implementations
-
----
-
-## 📄 License
-
-**Proprietary License** - All rights reserved.
-
-Copyright © 2024-2025 Brian Curry / Vector1 Research
-
-This software is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited. See [LICENSE](./LICENSE) for full terms.
-
----
-
-## 🙏 Acknowledgments
-
-Built with insights from:
-- Google Meridian
-- PyMC-Marketing
-- DoWhy / EconML / CausalML
-- Mesa ABM Framework
-- SALib
-
----
-
-<p align="center">
-  <strong>Papilon</strong> — Understanding the butterfly effects in your marketing
-</p>
+Built by [Brian Curry](https://vector1.ai), Vector1 Research.
