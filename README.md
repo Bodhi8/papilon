@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Bodhi8/papilon/main/assets/papilon-banner.jpg" alt="A butterfly whose wingbeat spirals out into a Lorenz attractor" width="100%">
+</p>
+
 # Papilon
 
 <p align="center">
