@@ -418,7 +418,7 @@ class MMM:
         return np.asarray(spend, dtype=float)
 
     def optimize_budget(self, total: float, bounds: dict[str, tuple[float, float]] | None = None,
-                        max_change: float | None = None, objective: str = "mean",
+                        max_change: float | None = 0.5, objective: str = "quantile",
                         quantile: float = 0.10, support: str = "flag",
                         support_quantile: float = 0.95) -> pd.DataFrame:
         """Allocate a per-period budget across channels.
@@ -427,15 +427,22 @@ class MMM:
         posterior. ``bounds`` maps channels to (min, max) spend per period; the
         default allows 0 to 3 times each channel's historical average.
 
-        Guardrails, added in 0.4.0 after benchmark tests showed that plans which
-        maximize expected contribution lean hardest on the channels the model
-        overrates:
+        Defaults changed in 0.4.0. Across 120 simulated brands with known
+        returns (``benchmarks/recovery.py``), plans that maximize expected
+        contribution leaned hardest on the channels the model overrated: they
+        lost money for a third of standard brands and for most brands with
+        unmodeled launches. Maximizing the 10th percentile of the gain with each
+        channel held within 50% of its current spend balanced the two best: it
+        lost money far less often than uncapped rules and captured more of the
+        available gain than a 25% cap in most settings. For the 0.3 behavior pass ``objective="mean",
+        max_change=None``.
 
         max_change : limit each channel to within this fraction of its current
-            spend, for example 0.25 for plus or minus 25%.
-        objective : "mean" maximizes expected contribution; "quantile" maximizes
-            the ``quantile`` (default 10th percentile) of the gain over the
-            current mix, which favors plans that hold up if the model is wrong.
+            spend (default 0.5, plus or minus 50%); None removes the limit.
+        objective : "quantile" (default) maximizes the ``quantile`` (default
+            10th percentile) of the gain over the current mix, which favors plans
+            that hold up if the model is wrong; "mean" maximizes expected
+            contribution.
         support : "flag" marks channels whose planned spend exceeds the
             ``support_quantile`` of their historical sustained spend (rolling
             means over the carryover window, since a plan is a sustained level);

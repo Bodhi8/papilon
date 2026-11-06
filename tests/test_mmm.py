@@ -37,7 +37,7 @@ def test_contributions_add_up_to_sales(quick_model, data):
 def test_optimize_budget_respects_total_and_bounds(quick_model):
     total = 150.0
     bounds = {"display": (5.0, 15.0)}
-    out = quick_model.optimize_budget(total=total, bounds=bounds)
+    out = quick_model.optimize_budget(total=total, bounds=bounds, objective="mean", max_change=None)
     assert np.isclose(out["optimal_spend"].sum(), total, atol=1e-4)
     assert 5.0 - 1e-6 <= out.loc["display", "optimal_spend"] <= 15.0 + 1e-6
     assert out["optimal_contribution"].sum() >= out["current_contribution"].sum() - 1e-6
@@ -85,8 +85,8 @@ def test_max_change_keeps_every_channel_within_band(quick_model):
 
 
 def test_plan_summary_and_quantile_objective(quick_model):
-    mean_plan = quick_model.optimize_budget(total=150.0)
-    q_plan = quick_model.optimize_budget(total=150.0, objective="quantile", quantile=0.1)
+    mean_plan = quick_model.optimize_budget(total=150.0, objective="mean", max_change=None)
+    q_plan = quick_model.optimize_budget(total=150.0, objective="quantile", quantile=0.1, max_change=None)
     for plan in (mean_plan, q_plan):
         s = plan.attrs["summary"]
         assert s["lift_p05"] <= s["expected_lift"] <= s["lift_p95"]
@@ -136,3 +136,13 @@ def test_roi_prior_pulls_estimate_toward_experiment(data):
     assert abs(est - true_search) < abs(base - true_search)
     with pytest.raises(ValueError):
         pp.MMM(df, roi_priors={"tv": (1.0, 0.1)}, **kw)
+
+
+def test_default_plan_is_downside_protected_and_capped(quick_model):
+    out = quick_model.optimize_budget(total=150.0)
+    s = out.attrs["summary"]
+    assert s["objective"] == "quantile" and s["max_change"] == 0.5
+    cur, opt = out["current_spend"], out["optimal_spend"]
+    assert ((opt >= cur * 0.5 - 1e-6) & (opt <= cur * 1.5 + 1e-6)).all()
+    lift = quick_model.evaluate_plan(opt, cur)["draws"]
+    assert np.quantile(lift, 0.10) >= -1e-6   # staying put scores 0, so the plan does no worse

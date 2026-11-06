@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papilon"
-version = "0.3.0"
+version = "0.4.0"
 description = "Bayesian marketing mix modeling with gated importance sampling, plus causal data simulation and complex-systems tools"
 readme = "README.md"
 license = "Apache-2.0"
