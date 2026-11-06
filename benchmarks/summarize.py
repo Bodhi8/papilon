@@ -45,8 +45,9 @@ def summarize(rows, label):
             print(f"      {p:15s} {pr.mean():8.2f} {tg.mean():7.2f} {tg.sum() / best.sum():8.0%} {np.median(cap):8.0%} "
                   f"{np.mean(tg < 0):8.0%} {inr:7.0%} {np.mean(pr - tg):12.2f} {mv:6.1f} {q13:8.1f} {q13in:8.0%}")
     print(f"\n      best possible gain: mean {np.mean([r['best_gain'] for r in rows]):.2f} per week")
-    print(f"      video delayed chosen: {np.mean([r['fits']['default']['video_delayed_prob'] > 0.5 for r in rows]):.0%}"
-          f"   pareto k > 0.7: {np.mean([max(r['fits']['default']['pareto_k'].values()) > 0.7 for r in rows]):.0%}")
+    f0 = fits[0]
+    print(f"      video delayed chosen ({f0}): {np.mean([r['fits'][f0]['video_delayed_prob'] > 0.5 for r in rows]):.0%}"
+          f"   pareto k > 0.7: {np.mean([max(r['fits'][f0]['pareto_k'].values()) > 0.7 for r in rows]):.0%}")
 
 
 if __name__ == "__main__":
