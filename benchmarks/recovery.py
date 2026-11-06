@@ -8,6 +8,8 @@ fits   default         Beta(2, 2) carryover prior (Papilon 0.3 behavior)
        short_carry     Beta(1.5, 3) carryover prior, which favors shorter carryover
        lift_search     default prior plus a simulated geo lift test on paid search
                        (true ROAS plus noise with sd 0.2, entered as a prior with sd 0.25)
+       launch_control  the brand's launch calendar entered as a control (hard worlds)
+       launch_lift     launch control plus the paid search lift test
 
 plans  mean            maximize expected sales, each channel 0 to 3x history (0.3 default)
        cap25           same, each channel within 25% of current spend
@@ -39,6 +41,8 @@ PLANS = {
     "quantile_cap25": dict(objective="quantile", max_change=0.25),
     "quantile25": dict(objective="quantile", quantile=0.25),
     "support": dict(support="limit"),
+    "cap50": dict(max_change=0.5),
+    "quantile_cap50": dict(objective="quantile", max_change=0.5),
     "cap25_support": dict(max_change=0.25, support="limit"),
 }
 
@@ -53,8 +57,11 @@ def _truth_curves(t):
             "l_max": 8}
 
 
+FIT_NAMES = ["default", "short_carry", "lift_search"]
+
+
 def one_world(args):
-    i, n, hard, seed = args
+    i, n, hard, seed, fit_names = args
     W = marketing_worlds(n, hard=hard, seed=seed)
     df, truth = W.frame(i), W.truth(i)
     hist = df[CHANNELS].mean().to_numpy()
@@ -65,14 +72,21 @@ def one_world(args):
     best_gain = true_gain(best)
     rng = np.random.default_rng(1000 + i)
     measured = truth["channels"]["paid_search"]["roas"] + rng.normal(0, 0.2)
-    fits = {"default": {}, "short_carry": {"alpha_prior": (1.5, 3.0)},
-            "lift_search": {"roi_priors": {"paid_search": (measured, 0.25)}}}
+    lift = {"roi_priors": {"paid_search": (measured, 0.25)}}
+    fits = {"default": {}, "short_carry": {"alpha_prior": (1.5, 3.0)}, "lift_search": lift,
+            # the brand knows its own launch calendar and gives it to the model
+            "launch_control": {"extra_controls": ["launch"]},
+            "launch_lift": {"extra_controls": ["launch"], **lift}}
+    fits = {k: fits[k] for k in fit_names}
+    df["launch"] = W.run["launch"][:, i]
     out = {"world": i, "hard": hard, "best_gain": best_gain, "fits": {}}
     true_scm = media_plan_scm(_truth_curves(truth), hist, weeks=13, draws=1)
     for fname, kw in fits.items():
         t0 = time.time()
+        kw = dict(kw)
+        ctrl = ["price_index", "promo"] + kw.pop("extra_controls", [])
         m = pp.MMM(df, target="sales", media=CHANNELS, date_col="date",
-                   controls=["price_index", "promo"], yearly_seasonality=2, seed=11, **kw)
+                   controls=ctrl, yearly_seasonality=2, seed=11, **kw)
         fam = m.compare_carryover({"all_geometric": [], "video_delayed": ["online_video"]})
         roi = m.get_roi()
         rec = {"seconds": time.time() - t0, "video_delayed_prob": float(fam.loc["video_delayed", "probability"]),
@@ -108,8 +122,15 @@ def main():
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--jobs", type=int, default=2)
     ap.add_argument("--out", default="recovery.jsonl")
+    ap.add_argument("--fits", default=",".join(FIT_NAMES))
     a = ap.parse_args()
-    jobs = [(i, a.worlds, a.hard, a.seed) for i in range(a.worlds)]
+    done = set()
+    try:  # resume: skip brands already in the output file
+        done = {json.loads(l)["world"] for l in open(a.out)}
+    except FileNotFoundError:
+        pass
+    fits = a.fits.split(",")
+    jobs = [(i, a.worlds, a.hard, a.seed, fits) for i in range(a.worlds) if i not in done]
     with open(a.out, "a") as f, Pool(a.jobs) as pool:
         for r in pool.imap_unordered(one_world, jobs):
             f.write(json.dumps(r) + "\n"); f.flush()
