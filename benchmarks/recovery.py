@@ -34,16 +34,16 @@ import numpy as np
 import papilon as pp
 from pycausalsim.futures.marketing import CHANNELS, compare_plans, marketing_worlds, media_plan_scm
 
-PLANS = {
-    "mean": dict(),
-    "cap25": dict(max_change=0.25),
-    "quantile": dict(objective="quantile"),
+PLANS = {  # every rule spells out its objective and caps, so it doesn't inherit the library defaults
+    "mean": dict(objective="mean", max_change=None),
+    "cap25": dict(objective="mean", max_change=0.25),
+    "quantile": dict(objective="quantile", max_change=None),
     "quantile_cap25": dict(objective="quantile", max_change=0.25),
-    "quantile25": dict(objective="quantile", quantile=0.25),
-    "support": dict(support="limit"),
-    "cap50": dict(max_change=0.5),
+    "quantile25": dict(objective="quantile", quantile=0.25, max_change=None),
+    "support": dict(objective="mean", max_change=None, support="limit"),
+    "cap50": dict(objective="mean", max_change=0.5),
     "quantile_cap50": dict(objective="quantile", max_change=0.5),
-    "cap25_support": dict(max_change=0.25, support="limit"),
+    "cap25_support": dict(objective="mean", max_change=0.25, support="limit"),
 }
 
 

@@ -60,20 +60,20 @@ Output from `examples/mmm_quickstart.py`, abridged (spend and sales in $ thousan
 
 ```
                log_evidence  log_bayes_factor_vs_best  probability  ess_fraction verdict
-all_geometric       241.223                   -18.766          0.0         0.134  ACCEPT
-video_delayed       259.988                     0.000          1.0         0.206  ACCEPT
+all_geometric       242.639                   -20.991          0.0         0.146  ACCEPT
+video_delayed       263.629                     0.000          1.0         0.140  ACCEPT
 
                 spend  roas_mean  roas_p05  roas_p95  mroas_mean  true_roas
-paid_search   4729.95       0.72      0.07      1.78        0.34       1.25
-paid_social   7678.08       0.97      0.44      1.70        0.48       1.50
-online_video  7369.53       1.75      1.49      2.06        0.88       1.57
-display       3497.10       0.70      0.08      1.65        0.36       0.74
+paid_search   4729.95       0.65      0.04      1.76        0.30       1.25
+paid_social   7678.08       0.95      0.42      1.68        0.47       1.50
+online_video  7369.53       1.75      1.50      2.02        0.86       1.57
+display       3497.10       0.63      0.04      1.54        0.31       0.74
 
               current_spend  optimal_spend  change_in_spend  outside_support
-paid_search            30.3           22.5             -7.8            False
-paid_social            49.2           40.5             -8.8            False
-online_video           47.2           69.9             22.6             True
-display                22.4           16.3             -6.1            False
+paid_search            30.3           20.7             -9.6            False
+paid_social            49.2           43.5             -5.7            False
+online_video           47.2           70.9             23.6             True
+display                22.4           14.1             -8.3            False
 ```
 
 The model picks the delayed carryover shape for online video and puts its peak at 2.0
@@ -83,10 +83,10 @@ seasonal demand, which makes it hard to separate from seasonality with three yea
 weekly data. That is the job lift tests do: pass a measured return as
 `roi_priors={"paid_search": (mean, sd)}` and the model is calibrated to it.
 
-The plan moves $22,600 a week toward online video and flags that $69,900 a week is
+The plan moves $23,600 a week toward online video and flags that $70,900 a week is
 more than the brand has sustained before. Against the true response curves it adds
-$3,900 a week in sales, about 70% of the best possible reallocation ($5,600). The 0.3
-optimizer moved $36,900 for $1,100.
+$4,400 a week in sales, about 79% of the best possible reallocation ($5,600). The 0.3
+optimizer, on the same fit, moves $38,000 for $800.
 
 ## Budget plans that hold up
 
@@ -99,20 +99,25 @@ product launches that raise search and social spend and demand together, and soc
 creative that wears out. Results, share of the best possible gain captured and share of
 brands where the plan lost money:
 
-| Setting | 0.3 rule (max expected, 0 to 3x) | 0.4 default (10th percentile, within 50%) |
-|---|---|---|
-| Standard brands | 32%, lost money 33% | 46%, lost money 7% |
-| Standard + lift test on paid search | 65%, 10% | 58%, 2% |
-| Launches hidden from the model | -132%, 83% | 5%, 45% |
-| Launch calendar as a control | 37%, 25% | 41%, 12% |
-| Launch calendar + lift test | 56%, 17% | 50%, 8% |
+| Setting | 0.3 rule (max expected, 0 to 3x), 0.4.0 fit | 0.4.0 default (10th percentile, within 50%) | 0.4.1 default |
+|---|---|---|---|
+| Standard brands | 32%, lost money 33% | 46%, lost money 7% | 43%, lost money 2% |
+| Standard + lift test on paid search | 65%, 10% | 58%, 2% | 57%, 0% |
+| Launches hidden from the model | -132%, 83% | 5%, 45% | 10%, 37% |
+| Launch calendar as a control | 37%, 25% | 41%, 12% | 39%, 8% |
+| Launch calendar + lift test | 56%, 17% | 50%, 8% | 48%, 8% |
 
 The 0.4 default gives up a few points in the best cases to avoid the worst ones. Three
 things matter more than the optimizer: put known events such as launches in
 `controls`, calibrate the channels the data cannot separate from demand with lift
 tests (`roi_priors`), and read `plan.attrs["summary"]["prob_better"]` before moving
-money. Known open issue: display is overrated by about 0.5 ROAS on average across
-the benchmark.
+money.
+
+0.4.1 puts the prior on each channel's return on the ROAS scale. Before, every channel
+shared one prior on its effect in units of mean sales, which handed small channels a
+prior return of 4 to 10 and overrated display by about 0.5 on average. Display's
+overstatement now averages +0.21 to +0.30 across the five settings, against +0.49 to
++0.66 in 0.4.0.
 
 To play a plan forward week by week with carryover and the full posterior, hand
 `model.posterior_curves()` to `pycausalsim.futures.media_plan_scm`.
