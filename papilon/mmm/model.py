@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 from scipy import optimize, stats
-from scipy.special import expit, gammaln, logsumexp
+from scipy.special import betaln, expit, gammaln, logsumexp
 
 from .transforms import delayed_adstock, geometric_adstock
 
@@ -39,6 +39,7 @@ class GateResult:
     ess: float
     verdict: str
     history: list[tuple[int, float, str]] = field(default_factory=list)
+    pareto_k: float = float("nan")  # PSIS tail shape; above 0.7 the importance weights are unreliable
 
 
 class MMM:
@@ -56,6 +57,11 @@ class MMM:
     trend : include a linear trend.
     l_max : length of the carryover kernel, in periods.
     delayed : channels whose effect peaks after the period of spend.
+    alpha_prior : Beta(a, b) prior on carryover retention, either one pair for
+        every channel or a dict of pairs by channel. Default (2, 2).
+    roi_priors : optional dict mapping a channel to (mean, sd) of its return on
+        spend over the fitted window, typically from a lift test or geo
+        experiment. Added to the posterior as a normal prior on that ROAS.
     period : periods per year (52.18 for weekly data).
     seed : random seed for reproducible results.
     """
@@ -73,6 +79,8 @@ class MMM:
         delayed: list[str] | None = None,
         period: float = 52.18,
         seed: int = 0,
+        alpha_prior: tuple[float, float] | dict[str, tuple[float, float]] = (2.0, 2.0),
+        roi_priors: dict[str, tuple[float, float]] | None = None,
     ) -> None:
         df = data.sort_values(date_col).reset_index(drop=True)
         self.data, self.target, self.media = df, target, list(media)
@@ -81,6 +89,14 @@ class MMM:
         self.delayed = list(delayed or [])
         self._check_delayed(self.delayed)
         self.rng = np.random.default_rng(seed)
+        if isinstance(alpha_prior, dict):
+            self.alpha_prior = {c: tuple(alpha_prior.get(c, (2.0, 2.0))) for c in self.media}
+        else:
+            self.alpha_prior = {c: tuple(alpha_prior) for c in self.media}
+        self.roi_priors = dict(roi_priors or {})
+        unknown = set(self.roi_priors) - set(self.media)
+        if unknown:
+            raise ValueError(f"roi_priors channels not in media: {sorted(unknown)}")
 
         self.y_raw = df[target].to_numpy(dtype=float)
         self.spend_raw = df[self.media].to_numpy(dtype=float)
@@ -91,6 +107,9 @@ class MMM:
         self.spend_scale[self.spend_scale == 0] = 1.0
         self.y = self.y_raw / self.y_scale
         self.spend = self.spend_raw / self.spend_scale
+        self._spend_tot = self.spend_raw.sum(axis=0)
+        self._roi_idx = [(self.media.index(c), float(m), float(sd)) for c, (m, sd) in
+                         (roi_priors or {}).items() if c in self.media]
 
         n = len(df)
         t = np.arange(n) / self.period
@@ -134,14 +153,15 @@ class MMM:
             za, zh, zb = z[i : i + 3]
             i += 3
             a, hs, b = expit(za), np.exp(zh), np.exp(zb)
-            lp += (stats.beta.logpdf(a, 2, 2) + np.log(a) + np.log1p(-a)
-                   + stats.lognorm.logpdf(hs, 0.5, scale=1.0) + zh
-                   + stats.halfnorm.logpdf(b, scale=0.5) + zb)
+            pa, pb = self.alpha_prior[c]
+            lp += (_beta_lpdf(a, pa, pb) + np.log(a) + np.log1p(-a)
+                   + _lognorm_lpdf(hs, 0.5) + zh
+                   + _halfnorm_lpdf(b, 0.5) + zb)
             peak = None
             if c in delayed:
                 u = expit(z[i]); i += 1
                 peak = max_peak * u
-                lp += stats.beta.logpdf(u, 2, 2) + np.log(u) + np.log1p(-u)
+                lp += _beta_lpdf(u, 2.0, 2.0) + np.log(u) + np.log1p(-u)
             params[c] = (a, hs, b, peak)
         return params, lp
 
@@ -165,7 +185,11 @@ class MMM:
         params, lp = self._unpack(z, delayed)
         if not np.isfinite(lp):
             return -np.inf
-        return self._log_marginal(self.y - self._media(params).sum(axis=1)) + lp
+        media = self._media(params)
+        for j, m, sd in self._roi_idx:
+            roas = media[:, j].sum() * self.y_scale / self._spend_tot[j]
+            lp += -0.5 * ((roas - m) / sd) ** 2 - np.log(sd) - _HALF_LOG_2PI
+        return self._log_marginal(self.y - media.sum(axis=1)) + lp
 
     # -------------------------------------------------------------- inference
     def _laplace(self, delayed: list[str], n_starts: int):
@@ -196,6 +220,7 @@ class MMM:
         log_w = np.array([self._log_post(zi, delayed) for zi in z]) - q.logpdf(z)
         log_ev = float(logsumexp(log_w) - np.log(n_draws))
         w = np.exp(log_w - log_w.max()); w /= w.sum()
+        self._last_k = _pareto_k(log_w)
         return z, w, log_ev, float(1 / np.sum(w ** 2) / n_draws)
 
     def _gate(self, name, delayed, n_draws, n_starts, accept, refine, max_refine):
@@ -209,7 +234,8 @@ class MMM:
                 break
             mean = np.average(z, axis=0, weights=w)  # refine: moment-match the weighted draws
             cov = np.cov(z.T, aweights=w) + 1e-6 * np.eye(len(mean))
-        return GateResult(name, list(delayed), log_ev, ess, verdict, history), z, w
+        return GateResult(name, list(delayed), log_ev, ess, verdict, history,
+                          pareto_k=float(getattr(self, "_last_k", np.nan))), z, w
 
     def _store_draws(self, delayed, z, w, n_keep=2000):
         idx = self.rng.choice(len(w), n_keep, p=w)
@@ -341,40 +367,191 @@ class MMM:
                              "contribution_p05": np.quantile(r, 0.05, axis=0),
                              "contribution_p95": np.quantile(r, 0.95, axis=0)})
 
-    def optimize_budget(self, total: float, bounds: dict[str, tuple[float, float]] | None = None) -> pd.DataFrame:
-        """Allocate a per-period budget across channels to maximize expected contribution.
+    def posterior_curves(self) -> dict:
+        """Posterior draws of each channel's response parameters, in raw units.
 
-        Uses steady-state response curves (constant spend each period), averaged
-        over the posterior. ``bounds`` maps channels to (min, max) spend per period;
-        the default allows 0 to 3 times each channel's historical average.
+        Returns a dict with ``media`` (channel names) and arrays of shape
+        (draws, channels): ``beta`` (maximum contribution per period, target
+        units), ``half_sat`` (spend per period at half of beta), ``alpha``
+        (carryover retention) and ``peak`` (delay of the peak, NaN for
+        geometric channels). Steady-state contribution at constant spend x is
+        ``beta * x / (x + half_sat)``. This is the hand-off format used by
+        simulators such as ``pycausalsim.futures.marketing``.
         """
         self._require_fit()
+        d = self._draws
+        return {"media": list(self.media),
+                "beta": d["beta"] * self.y_scale,
+                "half_sat": d["half_sat"] * self.spend_scale,
+                "alpha": d["alpha"].copy(), "peak": d["peak"].copy(),
+                "l_max": self.l_max,
+                "historical_spend": self.spend_raw.mean(axis=0)}
+
+    def _steady(self, x):
+        """Steady-state media contribution per period for each posterior draw."""
+        xs = np.asarray(x, dtype=float) / self.spend_scale
         b = self._draws["beta"]; hs = self._draws["half_sat"]
-        scale = self.spend_scale
+        return np.sum(b * xs / (xs + hs), axis=-1) * self.y_scale
 
-        def expected(x):
-            xs = np.asarray(x) / scale
-            return float(np.mean(np.sum(b * xs / (xs + hs), axis=1)) * self.y_scale)
+    def evaluate_plan(self, spend, against=None) -> dict:
+        """Posterior distribution of the change in per-period contribution from a plan.
 
+        ``spend`` and ``against`` are per-period spend by channel (dict or array in
+        ``media`` order). ``against`` defaults to the historical mix at the same total.
+        """
+        self._require_fit()
+        x = self._as_vector(spend)
         hist = self.spend_raw.mean(axis=0)
-        lims = [(bounds or {}).get(c, (0.0, 3.0 * hist[j])) for j, c in enumerate(self.media)]
-        if sum(lo for lo, _ in lims) > total or sum(hi for _, hi in lims) < total:
-            raise ValueError("bounds cannot be met with this total budget")
-        x0 = np.clip(hist / hist.sum() * total, [lo for lo, _ in lims], [hi for _, hi in lims])
-        res = optimize.minimize(lambda x: -expected(x), x0, method="SLSQP", bounds=lims,
-                                constraints=[{"type": "eq", "fun": lambda x: x.sum() - total}],
-                                options={"maxiter": 500, "ftol": 1e-10})
-        x_opt = res.x
+        base = hist / hist.sum() * x.sum() if against is None else self._as_vector(against)
+        lift = self._steady(x) - self._steady(base)
+        return {"expected_lift": float(lift.mean()),
+                "lift_p05": float(np.quantile(lift, 0.05)),
+                "lift_p95": float(np.quantile(lift, 0.95)),
+                "prob_better": float(np.mean(lift > 0)),
+                "draws": lift}
+
+    def _as_vector(self, spend):
+        if isinstance(spend, dict):
+            return np.array([float(spend[c]) for c in self.media])
+        if isinstance(spend, pd.Series):
+            return spend.reindex(self.media).to_numpy(dtype=float)
+        return np.asarray(spend, dtype=float)
+
+    def optimize_budget(self, total: float, bounds: dict[str, tuple[float, float]] | None = None,
+                        max_change: float | None = 0.5, objective: str = "quantile",
+                        quantile: float = 0.10, support: str = "flag",
+                        support_quantile: float = 0.95) -> pd.DataFrame:
+        """Allocate a per-period budget across channels.
+
+        Uses steady-state response curves (constant spend each period) from the
+        posterior. ``bounds`` maps channels to (min, max) spend per period; the
+        default allows 0 to 3 times each channel's historical average.
+
+        Defaults changed in 0.4.0. Across 120 simulated brands with known
+        returns (``benchmarks/recovery.py``), plans that maximize expected
+        contribution leaned hardest on the channels the model overrated: they
+        lost money for a third of standard brands and for most brands with
+        unmodeled launches. Maximizing the 10th percentile of the gain with each
+        channel held within 50% of its current spend balanced the two best: it
+        lost money far less often than uncapped rules and captured more of the
+        available gain than a 25% cap in most settings. For the 0.3 behavior pass ``objective="mean",
+        max_change=None``.
+
+        max_change : limit each channel to within this fraction of its current
+            spend (default 0.5, plus or minus 50%); None removes the limit.
+        objective : "quantile" (default) maximizes the ``quantile`` (default
+            10th percentile) of the gain over the current mix, which favors plans
+            that hold up if the model is wrong; "mean" maximizes expected
+            contribution.
+        support : "flag" marks channels whose planned spend exceeds the
+            ``support_quantile`` of their historical sustained spend (rolling
+            means over the carryover window, since a plan is a sustained level);
+            "limit" also caps them there; "ignore" does neither.
+
+        The result carries ``attrs["summary"]`` with the expected gain over the
+        current mix, its 90% interval and the probability the plan beats it.
+        """
+        self._require_fit()
+        if objective not in ("mean", "quantile"):
+            raise ValueError('objective must be "mean" or "quantile"')
+        if support not in ("flag", "limit", "ignore"):
+            raise ValueError('support must be "flag", "limit" or "ignore"')
+        hist = self.spend_raw.mean(axis=0)
         current = hist / hist.sum() * total
+        # a plan is a sustained level, so compare it with sustained history:
+        # rolling means of spend over the carryover window
+        k = min(self.l_max, len(self.spend_raw))
+        roll = np.array([np.convolve(self.spend_raw[:, j], np.ones(k) / k, mode="valid")
+                         for j in range(len(self.media))]).T
+        observed_hi = np.quantile(roll, support_quantile, axis=0)
+        lims = []
+        for j, c in enumerate(self.media):
+            lo, hi = (bounds or {}).get(c, (0.0, 3.0 * hist[j]))
+            if max_change is not None:
+                lo, hi = max(lo, current[j] * (1 - max_change)), min(hi, current[j] * (1 + max_change))
+            if support == "limit":
+                hi = min(hi, max(observed_hi[j], current[j]))
+            lims.append((lo, hi))
+        if sum(lo for lo, _ in lims) > total + 1e-9 or sum(hi for _, hi in lims) < total - 1e-9:
+            raise ValueError("bounds cannot be met with this total budget")
+
+        base = self._steady(current)
+        if objective == "mean":
+            f = lambda x: -float(self._steady(x).mean())
+        else:
+            f = lambda x: -float(np.quantile(self._steady(x) - base, quantile))
+        cons = [{"type": "eq", "fun": lambda x: x.sum() - total}]
+        x0 = np.clip(current, [lo for lo, _ in lims], [hi for _, hi in lims])
+        starts = [x0]
+        if objective == "quantile":  # the quantile surface is rough; also start from the mean optimum
+            r = optimize.minimize(lambda x: -float(self._steady(x).mean()), x0, method="SLSQP",
+                                  bounds=lims, constraints=cons, options={"maxiter": 500, "ftol": 1e-10})
+            starts.append(r.x)
+            # and from the best point on the straight path from the current mix to
+            # the mean optimum (shrinkage), where the quantile objective is smooth
+            path = [x0 + t * (r.x - x0) for t in np.linspace(0, 1, 21)]
+            starts.append(min(path, key=f))
+        best = None
+        for s0 in starts:
+            r = optimize.minimize(f, s0, method="SLSQP", bounds=lims, constraints=cons,
+                                  options={"maxiter": 500, "ftol": 1e-10})
+            if best is None or r.fun < best.fun:
+                best = r
+        x_opt = best.x
 
         def per_channel(x):
-            xs = np.asarray(x) / scale
-            return (b * xs / (xs + hs)).mean(axis=0) * self.y_scale
+            xs = np.asarray(x) / self.spend_scale
+            return (self._draws["beta"] * xs / (xs + self._draws["half_sat"])).mean(axis=0) * self.y_scale
 
-        return pd.DataFrame({
+        out = pd.DataFrame({
             "current_spend": current,
             "optimal_spend": x_opt,
             "current_contribution": per_channel(current),
             "optimal_contribution": per_channel(x_opt),
         }, index=pd.Index(self.media, name="channel")).assign(
-            change_in_spend=lambda d: d.optimal_spend - d.current_spend)
+            change_in_spend=lambda d: d.optimal_spend - d.current_spend,
+            outside_support=x_opt > observed_hi + 1e-9)
+        ev = self.evaluate_plan(x_opt, current)
+        out.attrs["summary"] = {k: v for k, v in ev.items() if k != "draws"} | {
+            "objective": objective, "max_change": max_change, "support": support}
+        return out
+
+
+def _pareto_k(log_w: np.ndarray) -> float:
+    """Pareto-smoothed importance sampling tail shape k-hat (Vehtari et al.).
+
+    Fits a generalized Pareto distribution to the largest importance ratios.
+    k-hat below 0.5 is good, 0.5 to 0.7 usable, above 0.7 unreliable.
+    """
+    lw = np.sort(np.asarray(log_w, dtype=float))
+    lw = lw[np.isfinite(lw)]
+    n = len(lw)
+    m = int(min(0.2 * n, 3 * np.sqrt(n)))
+    if m < 5:
+        return float("nan")
+    w = np.exp(lw - lw[-1])
+    tail, u = w[-m:], w[-m - 1]
+    try:
+        k, _, _ = stats.genpareto.fit(tail - u, floc=0)
+    except Exception:
+        return float("nan")
+    return float(k)
+
+
+# Closed-form log densities. scipy.stats adds ~0.1 ms of argument checking per
+# call, which dominated fit time (the posterior is evaluated tens of thousands
+# of times); these are the same formulas without the overhead.
+_HALF_LOG_2PI = 0.5 * np.log(2 * np.pi)
+
+
+def _beta_lpdf(x, a, b):
+    return (a - 1) * np.log(x) + (b - 1) * np.log1p(-x) - betaln(a, b)
+
+
+def _lognorm_lpdf(x, s):  # scale 1
+    lx = np.log(x)
+    return -lx - np.log(s) - _HALF_LOG_2PI - lx * lx / (2 * s * s)
+
+
+def _halfnorm_lpdf(x, scale):
+    return np.log(2.0) - _HALF_LOG_2PI - np.log(scale) - x * x / (2 * scale * scale)
