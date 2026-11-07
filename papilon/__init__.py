@@ -10,7 +10,7 @@ from .relationships import analyze_relationships
 from .simulation import simulate_kde_scenarios
 from .states import count_microstates, macrostate_entropy
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "MMM",
