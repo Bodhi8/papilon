@@ -62,6 +62,14 @@ class MMM:
     roi_priors : optional dict mapping a channel to (mean, sd) of its return on
         spend over the fitted window, typically from a lift test or geo
         experiment. Added to the posterior as a normal prior on that ROAS.
+    roas_prior_scale : scale of the half-normal prior on each channel's return on
+        spend at its typical spend level, either one number for every channel or a
+        dict by channel (channels left out keep 2.0). Default 2.0 (prior median
+        ROAS about 1.35). The prior is
+        set on the ROAS scale so a small channel is not given a larger prior
+        return than a big one. ``None`` restores the 0.3/0.4 prior, a half-normal
+        with scale 0.5 on the effect in units of mean sales, which implied ROAS of
+        roughly 4 to 10 for channels with a small share of spend.
     period : periods per year (52.18 for weekly data).
     seed : random seed for reproducible results.
     """
@@ -81,6 +89,7 @@ class MMM:
         seed: int = 0,
         alpha_prior: tuple[float, float] | dict[str, tuple[float, float]] = (2.0, 2.0),
         roi_priors: dict[str, tuple[float, float]] | None = None,
+        roas_prior_scale: float | dict[str, float] | None = 2.0,
     ) -> None:
         df = data.sort_values(date_col).reset_index(drop=True)
         self.data, self.target, self.media = df, target, list(media)
@@ -108,6 +117,14 @@ class MMM:
         self.y = self.y_raw / self.y_scale
         self.spend = self.spend_raw / self.spend_scale
         self._spend_tot = self.spend_raw.sum(axis=0)
+        # Prior scale for each channel's effect b (in units of mean sales). Contribution at
+        # typical spend is about b * y_scale * 0.5 (half-saturation prior median 1, kernel
+        # normalized to sum to 1), so ROAS ~ b * y_scale * 0.5 / spend_scale.
+        rs = ({c: roas_prior_scale.get(c, 2.0) for c in self.media} if isinstance(roas_prior_scale, dict)
+              else {c: roas_prior_scale for c in self.media})
+        self._b_scale = {c: (0.5 if rs.get(c) is None else
+                             float(rs[c]) * self.spend_scale[j] / (0.5 * self.y_scale))
+                         for j, c in enumerate(self.media)}
         self._roi_idx = [(self.media.index(c), float(m), float(sd)) for c, (m, sd) in
                          (roi_priors or {}).items() if c in self.media]
 
@@ -156,7 +173,7 @@ class MMM:
             pa, pb = self.alpha_prior[c]
             lp += (_beta_lpdf(a, pa, pb) + np.log(a) + np.log1p(-a)
                    + _lognorm_lpdf(hs, 0.5) + zh
-                   + _halfnorm_lpdf(b, 0.5) + zb)
+                   + _halfnorm_lpdf(b, self._b_scale[c]) + zb)
             peak = None
             if c in delayed:
                 u = expit(z[i]); i += 1
@@ -194,7 +211,7 @@ class MMM:
     # -------------------------------------------------------------- inference
     def _laplace(self, delayed: list[str], n_starts: int):
         f = lambda z: -self._log_post(z, delayed)
-        z_init = np.concatenate([[0.0, 0.0, np.log(0.2)] for _ in self.media] + [[0.0]] * len(delayed))
+        z_init = np.concatenate([[0.0, 0.0, np.log(0.4 * self._b_scale[c])] for c in self.media] + [[0.0]] * len(delayed))
         best = None
         for _ in range(n_starts):
             z0 = z_init + self.rng.normal(0, 0.3, len(z_init))
