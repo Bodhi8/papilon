@@ -146,3 +146,22 @@ def test_default_plan_is_downside_protected_and_capped(quick_model):
     assert ((opt >= cur * 0.5 - 1e-6) & (opt <= cur * 1.5 + 1e-6)).all()
     lift = quick_model.evaluate_plan(opt, cur)["draws"]
     assert np.quantile(lift, 0.10) >= -1e-6   # staying put scores 0, so the plan does no worse
+
+
+def test_effect_prior_is_on_the_roas_scale(data):
+    """The prior on each channel's effect scales with its spend, so a small channel
+    is not handed a larger prior return than a big one (0.4.1)."""
+    df, _ = data
+    m = pp.MMM(df, target="sales", media=MEDIA, date_col="date", controls=["price_index", "promo"])
+    s = m._b_scale
+    spend = df[MEDIA].mean()
+    ratio = {c: s[c] / spend[c] for c in MEDIA}
+    assert max(ratio.values()) / min(ratio.values()) == pytest.approx(1.0)
+    # prior median effect at typical spend, expressed as ROAS: 0.674 * scale (half-normal median)
+    implied = {c: 0.674 * s[c] * 0.5 * m.y_scale / spend[c] for c in MEDIA}
+    assert all(v == pytest.approx(0.674 * 2.0, rel=1e-6) for v in implied.values())
+    legacy = pp.MMM(df, target="sales", media=MEDIA, date_col="date", roas_prior_scale=None)
+    assert all(v == 0.5 for v in legacy._b_scale.values())
+    custom = pp.MMM(df, target="sales", media=MEDIA, date_col="date", roas_prior_scale={"display": 4.0})
+    assert custom._b_scale["display"] == pytest.approx(2 * s["display"])
+    assert custom._b_scale["paid_search"] == pytest.approx(s["paid_search"])

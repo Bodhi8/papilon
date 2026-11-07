@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.4.1 (2026-11-07)
+
+### Fixed
+- Display, and any channel with a small share of spend, was overrated. Every channel
+  had the same half-normal prior (scale 0.5) on its effect in units of mean sales,
+  which for a channel spending little implied a prior return on spend of roughly 4 to
+  10. The prior is now set on the ROAS scale for each channel: a half-normal with
+  scale `roas_prior_scale` (default 2.0, prior median about 1.35) on its return at
+  typical spend. On the 120-brand benchmark, display's average overstatement fell
+  from +0.49 to +0.21 on standard brands and roughly halved in every other setting;
+  paid search's fell from +0.72 to +0.26. Interval coverage held or improved
+  (display 90% to 95%). The default plan lost money for 2% of standard brands
+  instead of 7%, and for 37% instead of 45% when launches were hidden, while
+  capturing a similar share of the available gain (43% vs 46% on standard brands).
+
+### Added
+- `MMM(roas_prior_scale=...)`: one number or a dict by channel (channels left out
+  keep 2.0). `None` restores the 0.4.0 prior.
+
+### Changed
+- `benchmarks/recovery.py` spells out each plan rule's objective and caps, so rules
+  such as `mean` no longer inherit the 0.4 defaults.
+
 ## 0.4.0 (2026-11-06)
 
 ### Changed
