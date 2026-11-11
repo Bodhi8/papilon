@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use Papilon, please cite it as below."
+title: "Papilon: a Bayesian marketing mix model you can check"
+type: software
+authors:
+  - family-names: Curry
+    given-names: Brian J.
+    affiliation: Vector1 Research
+version: 0.5.0
+license: Apache-2.0
+repository-code: "https://github.com/Bodhi8/papilon"
+url: "https://vector1.ai"
+keywords:
+  - marketing mix modeling
+  - Bayesian inference
+  - importance sampling
+  - knowledge graph
+  - budget optimization

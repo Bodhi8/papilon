@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papilon"
-version = "0.4.1"
-description = "Bayesian marketing mix modeling with gated importance sampling, plus causal data simulation and complex-systems tools"
+version = "0.5.0"
+description = "A Bayesian marketing mix model you can check: graded against known truth, with a marketing knowledge graph, self-checks, lift-test planning and grounded tools for AI assistants"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
@@ -14,6 +14,7 @@ authors = [{ name = "Brian Curry", email = "brian@vector1.ai" }]
 keywords = [
     "marketing mix modeling", "MMM", "media mix model", "bayesian", "adstock",
     "importance sampling", "causal inference", "budget optimization", "statistical mechanics",
+    "knowledge graph", "ontology", "lift test", "incrementality", "model context protocol", "simulation",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -39,6 +40,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "build>=1.0", "twine>=5.0"]
+mcp = ["mcp>=1.2"]
 
 [project.urls]
 Homepage = "https://vector1.ai"
