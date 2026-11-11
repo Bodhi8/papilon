@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.0 (unreleased)
+## 0.5.0 (2026-11-11)
 
 ### Added
 - `MarketingGraph`: a typed knowledge graph of the brand (channels with funnel stage,
