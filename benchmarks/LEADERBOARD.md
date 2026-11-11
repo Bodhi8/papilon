@@ -11,7 +11,7 @@ Search spend follows demand; launches are visible in spend.
 
 | Entry | 90% range holds the truth | ROAS error | Bias | Best gain captured | Plans that lost money |
 |---|---|---|---|---|---|
-| Papilon 0.5, defaults | 95% | 0.33 | +0.13 | 51% | 6% |
+| Papilon 0.5, defaults | 95% | 0.33 | +0.13 | 51% | 0% |
 | Least squares, fixed adstock | 45% | 0.66 | -0.33 | -24% | 50% |
 
 ## Track: hard
@@ -30,7 +30,7 @@ Every channel's true response is S-shaped.
 | Entry | 90% range holds the truth | ROAS error | Bias | Best gain captured | Plans that lost money |
 |---|---|---|---|---|---|
 | Papilon 0.5, defaults | 55% | 0.80 | +0.78 | 39% | 0% |
-| Papilon 0.5, curve shape chosen | 81% | 0.52 | +0.43 | 38% | 6% |
+| Papilon 0.5, curve shape chosen | 81% | 0.52 | +0.43 | 38% | 0% |
 | Least squares, fixed adstock | 64% | 0.70 | +0.25 | 4% | 50% |
 
 ## Reading the columns
