@@ -1,0 +1,27 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "mkt": "https://vector1.ai/ns/marketing#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "id": "@id",
+    "type": "@type",
+    "Outcome": "mkt:Outcome",
+    "Channel": "mkt:Channel",
+    "Driver": "mkt:Driver",
+    "Group": "mkt:Group",
+    "Experiment": "mkt:Experiment",
+    "name": "mkt:name",
+    "stage": "mkt:stage",
+    "column": "mkt:column",
+    "kind": "mkt:kind",
+    "modeled": {"@id": "mkt:modeled", "@type": "xsd:boolean"},
+    "roas": {"@id": "mkt:roas", "@type": "xsd:double"},
+    "sd": {"@id": "mkt:sd", "@type": "xsd:double"},
+    "status": "mkt:status",
+    "drives": {"@id": "mkt:drives", "@container": "@set"},
+    "sets_spend": {"@id": "mkt:sets_spend", "@container": "@set"},
+    "mediates": {"@id": "mkt:mediates", "@container": "@set"},
+    "belongs_to": {"@id": "mkt:belongs_to", "@container": "@set"},
+    "measured_by": {"@id": "mkt:measured_by", "@container": "@set"}
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "papilon": "0.5.0",
+  "pycausalsim": "0.5.0",
+  "seed": 7,
+  "brands_per_track": 16,
+  "tracks": {
+    "standard": {
+      "Papilon 0.5, defaults": {
+        "brands": 16,
+        "coverage_90": 0.953125,
+        "abs_error": 0.3267230848369206,
+        "bias": 0.13026825916721593,
+        "plan_capture": 0.5124404738720727,
+        "plan_lost_money": 0.0
+      },
+      "Least squares, fixed adstock": {
+        "brands": 16,
+        "coverage_90": 0.453125,
+        "abs_error": 0.6556737080953386,
+        "bias": -0.3346171710304541,
+        "plan_capture": -0.24474829439038268,
+        "plan_lost_money": 0.5
+      }
+    },
+    "hard": {
+      "Papilon 0.5, defaults": {
+        "brands": 16,
+        "coverage_90": 0.671875,
+        "abs_error": 0.9239807734796568,
+        "bias": 0.8195001539125819,
+        "plan_capture": 0.27437421814487184,
+        "plan_lost_money": 0.3125
+      },
+      "Least squares, fixed adstock": {
+        "brands": 16,
+        "coverage_90": 0.421875,
+        "abs_error": 0.982707947538976,
+        "bias": 0.33550136654911494,
+        "plan_capture": -0.23633971950021607,
+        "plan_lost_money": 0.4375
+      }
+    },
+    "s_curve": {
+      "Papilon 0.5, defaults": {
+        "brands": 16,
+        "coverage_90": 0.546875,
+        "abs_error": 0.7965568509214506,
+        "bias": 0.7805069432072992,
+        "plan_capture": 0.3873628823283658,
+        "plan_lost_money": 0.0
+      },
+      "Papilon 0.5, curve shape chosen": {
+        "brands": 16,
+        "coverage_90": 0.8125,
+        "abs_error": 0.5152957355570749,
+        "bias": 0.4293625563668694,
+        "plan_capture": 0.3842476888822169,
+        "plan_lost_money": 0.0
+      },
+      "Least squares, fixed adstock": {
+        "brands": 16,
+        "coverage_90": 0.640625,
+        "abs_error": 0.7013063668320214,
+        "bias": 0.25497456928379736,
+        "plan_capture": 0.0367237867116144,
+        "plan_lost_money": 0.5
+      }
+    }
+  }
+}
