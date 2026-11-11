@@ -133,6 +133,12 @@ sends no data anywhere: the assistant writes sentences, the model supplies the n
 `examples/checkable_mmm.py` runs all of this in about a minute. The methods are
 described in [RFC 002](docs/design/002-checkable-mmm.md).
 
+Guides: [quickstart](docs/quickstart.md), [the knowledge graph](docs/knowledge-graph.md),
+[checking the model](docs/checking.md), [AI assistants](docs/ai-assistants.md) and the
+[marketing vocabulary](docs/vocabulary/README.md). The
+[open leaderboard](benchmarks/LEADERBOARD.md) scores models on simulated brands with
+known returns, and [anyone can enter one](benchmarks/SUBMITTING.md).
+
 ## What Papilon does not do yet
 
 Papilon is deliberately small. It does not fit geo-level or product-level hierarchies,
