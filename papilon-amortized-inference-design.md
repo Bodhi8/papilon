@@ -117,7 +117,7 @@ SBC (Talts et al.): draw θ* from the prior, simulate a panel, run the network, 
 
 ### 3.2 At inference: amortization as proposal, not verdict
 
-The decisive trick — the amortized posterior q(θ|D) is used as an **importance-sampling proposal against the true PyMC likelihood**:
+The decisive trick — the amortized posterior q(θ|D) is used as an **importance-sampling proposal against the exact model likelihood**:
 
 ```python
 theta = q.sample(n=4000)                      # amortized draws — free
@@ -151,12 +151,12 @@ The layering is the point: SBC proves calibration *within the simulator's world*
 - **Research program / paper skeleton:**
   1. Method — amortized structural inference for reflexive marketing systems (encoder factorization + flow posterior + proposal-refinement inference)
   2. Sim-to-real — domain-randomized causal prior, typicality gating, empirical-Bayes simulator updating (with the MNE episode store as the mechanism)
-  3. Calibration — SBC-in-CI, ESS-gated refinement, conformal decision intervals; benchmark against Meridian/Robyn-style knob-tuned workflows on synthetic environments with known truth and on real panels with experiment ground truth
+  3. Calibration — SBC-in-CI, ESS-gated refinement, conformal decision intervals; benchmark against knob-tuned workflows on synthetic environments with known truth and on real panels with experiment ground truth
 - **Evaluation plan:** (a) parameter recovery + SBC on held-out simulated families, including deliberately misspecified ones the gate must catch; (b) time-to-calibrated-posterior vs. full MCMC and vs. hand-tuned baselines; (c) decision regret — incremental revenue of budget plans under each method in simulated environments where true response is known; (d) real-world coverage ledger over ≥1 year of geo experiments.
 
 ## 5. Open questions (honest list)
 
 - Minimum viable simulator diversity: how many structural families before the typicality gate stops firing on typical real panels? (Empirical; start logging early.)
-- Importance refinement requires the amortized config to define a tractable PyMC likelihood — configuration choices (model family selection) need a discrete head handled by mixture-over-models importance sampling, which is fiddlier than the continuous case.
+- Importance refinement requires the amortized config to define a tractable likelihood — configuration choices (model family selection) need a discrete head handled by mixture-over-models importance sampling, which is fiddlier than the continuous case.
 - Conformal exchangeability: experiments across clients aren't i.i.d.; use Mondrian/grouped conformal (per channel-type strata) and say so in the paper.
 - Compute: training the PFN is the big line item; the panel-embedding factorization keeps it single-node-multi-GPU scale, but budget for repeated retrains as the simulator expands.

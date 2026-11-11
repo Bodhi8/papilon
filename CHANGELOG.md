@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.5.0 (2026-11-11)
+
+### Added
+- `MarketingGraph`: a typed knowledge graph of the brand (channels with funnel stage,
+  drivers, events, experiments; `drives`, `sets_spend`, `mediates`, `belongs_to`,
+  `measured_by`). It compiles to model settings (`model_kwargs()`, `build_model()`,
+  `carryover_candidates()`), audits the setup (`audit()` names every channel that
+  depends on a declared driver with no data, and every mediated effect), answers
+  "what else moves?" (`what_moves()`), holds unconfirmed edges apart (`propose()`,
+  `confirm()`), and exports to plain data, JSON-LD and prose. The same graph feeds
+  `pycausalsim.futures.worlds_from_graph`.
+- S-shaped saturation: `MMM(s_curve=[...])` fits a Hill shape for those channels, and
+  `compare_models()` chooses between concave and S-shaped curves by Bayes factor, the
+  way `compare_carryover()` chooses carryover. `posterior_curves()` carries `shape`.
+- `MMM.self_check()`: refits the same settings to simulated copies of the brand with
+  known returns and reports interval coverage, bias and whether the default plan made
+  or lost money. `confounded={channel: strength}` shows what an unmeasured driver
+  would do to the estimates.
+- `MMM.value_of_lift_test()`: ranks channels by the expected gain to the budget plan
+  from testing each, by reweighting posterior draws on simulated test results.
+- `MMM.backtest(holdout)`: refit without the last periods and forecast them, with a
+  naive forecast for comparison.
+- `papilon.ai`: `brief()` (facts and rule-based cautions as plain data), `ToolBox`
+  (the model as tools with JSON schemas in the layouts chat model APIs accept, results
+  carrying their caveats) and `SYSTEM_PROMPT`. No language model is called and no
+  data leaves the machine.
+- `python -m papilon.mcp_server`: the same tools over the Model Context Protocol
+  (optional extra `papilon[mcp]`).
+- `MMM.roas_draws()`: per-draw ROAS, marginal ROAS and share of sales.
+
+### Changed
+- The posterior is evaluated for whole batches of draws at once. Importance sampling,
+  the Hessian, `get_roi()` and `contributions()` are vectorized; a two-family
+  comparison on the bundled data takes about half the time. Log evidence matches
+  0.4.1 to three decimals; Monte Carlo draws differ slightly.
+- `GateResult` gains `s_curve`.
+- Every source file carries the Apache 2.0 header, checked by a test. Added
+  `TRADEMARKS.md`, `GOVERNANCE.md`, `CONTRIBUTING.md` (contributions under Apache 2.0
+  with DCO sign-off), `CODE_OF_CONDUCT.md` and `CITATION.cff`.
+
 ## 0.4.1 (2026-11-07)
 
 ### Fixed

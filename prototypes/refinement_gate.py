@@ -20,7 +20,7 @@ The gate:
     ess/n > 0.01  -> REFINE   short MCMC seeded at proposal draws
     else          -> ESCALATE full MCMC from weak prior + log gap episode
 
-Swapping the toy log_posterior for PyMC's `model.compile_logp()` is the
+Swapping the toy log_posterior for the model's exact log posterior is the
 only change needed to run this against a real Papilon MMM.
 """
 
