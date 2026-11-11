@@ -93,7 +93,8 @@ def summarize(rows: pd.DataFrame) -> dict:
             "abs_error": float(rows.error.abs().mean()),
             "bias": float(rows.error.mean()),
             "plan_capture": float(plans.plan_gain.sum() / plans.best_gain.sum()),
-            "plan_lost_money": float((plans.plan_gain < -1e-9).mean())}
+            # a plan that leaves the mix unchanged scores a rounding-error "loss"; do not count it
+            "plan_lost_money": float((plans.plan_gain < -1e-6 * plans.best_gain.clip(lower=1.0)).mean())}
 
 
 def main():

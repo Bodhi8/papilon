@@ -820,7 +820,7 @@ class MMM:
             "coverage_by_channel": g.covered.mean().to_dict(),
             "abs_error_by_channel": g.error.apply(lambda e: float(np.abs(e).mean())).to_dict(),
             "bias_by_channel": g.error.mean().to_dict(),
-            "plan_lost_money": float(np.mean(gains[:, 0] < 0)),
+            "plan_lost_money": float(np.mean(gains[:, 0] < -1e-6 * np.maximum(gains[:, 1], 1.0))),
             "plan_capture": float(gains[:, 0].sum() / max(gains[:, 1].sum(), 1e-12)),
         }
         return out
