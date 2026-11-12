@@ -20,7 +20,7 @@ import pandas as pd
 
 from .mmm.transforms import delayed_adstock, geometric_adstock, hill
 
-__all__ = ["make_synthetic_mmm"]
+__all__ = ["make_synthetic_mmm", "make_synthetic_geo_mmm"]
 
 CHANNELS = ["paid_search", "paid_social", "online_video", "display"]
 TRUTH = {
@@ -86,3 +86,45 @@ def make_synthetic_mmm(n_weeks: int = 156, seed: int = 2026, l_max: int = 8):
     summary["baseline_share"] = float(base.sum() / sales.sum())
     truth = {"channels": TRUTH, "base": BASE, "l_max": l_max, "seed": seed, "summary": summary}
     return df, truth
+
+
+def make_synthetic_geo_mmm(n_geos: int = 8, n_weeks: int = 156, seed: int = 2026, l_max: int = 8):
+    """Weekly sales and spend for ``n_geos`` regions of different sizes, with the truth that generated them.
+
+    Three channels share carryover and curve shapes across regions; each region's
+    effect size is the pooled effect times a regional factor (log-normal, sd 0.25).
+    Regions plan spend separately, which is what lets a geo model separate channels.
+
+    Returns a long DataFrame (date, region, search, social, video, sales) and a dict
+    with the pooled parameters, each region's effects and the true national and
+    regional ROAS.
+    """
+    rng = np.random.default_rng(seed)
+    t = np.arange(n_weeks)
+    dates = pd.date_range("2023-01-02", periods=n_weeks, freq="W-MON")
+    season = np.sin(2 * np.pi * t / 52.18)
+    media = ["search", "social", "video"]
+    shared = {"search": {"alpha": 0.2, "half_sat": 0.9, "mu": 0.12},
+              "social": {"alpha": 0.45, "half_sat": 1.1, "mu": 0.18},
+              "video": {"alpha": 0.6, "half_sat": 1.3, "mu": 0.25}}
+    rows, regional, num, den = [], {}, np.zeros(3), np.zeros(3)
+    for g in range(n_geos):
+        size = rng.uniform(0.5, 3.0)
+        base = 600 * size * (1 + 0.1 * season) + 20 * size * t / 52.18
+        sales = base.copy()
+        spend, eff_g = {}, {}
+        for j, c in enumerate(media):
+            x = size * 40 * rng.gamma(4, 1, n_weeks) / 4 * (1 + 0.3 * np.sin(2 * np.pi * t / 26 + rng.uniform(0, 6)))
+            ad = geometric_adstock(x / x.mean(), shared[c]["alpha"], l_max)
+            b = shared[c]["mu"] * np.exp(rng.normal(0, 0.25))
+            eff = b * hill(ad, shared[c]["half_sat"]) * base.mean()
+            spend[c], eff_g[c] = x, b
+            sales += eff
+            num[j] += eff.sum(); den[j] += x.sum()
+            regional.setdefault(f"r{g}", {})[c] = {"beta": float(b), "roas": float(eff.sum() / x.sum())}
+        sales += rng.normal(0, 0.03 * base.mean(), n_weeks)
+        rows.append(pd.DataFrame({"date": dates, "region": f"r{g}", **{c: np.round(spend[c], 2) for c in media},
+                                  "sales": np.round(sales, 2)}))
+    truth = {"shared": shared, "regional": regional,
+             "national_roas": {c: float(num[j] / den[j]) for j, c in enumerate(media)}}
+    return pd.concat(rows, ignore_index=True), truth

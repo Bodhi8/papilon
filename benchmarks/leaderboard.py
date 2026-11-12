@@ -69,9 +69,9 @@ def least_squares(df, info):
 
 # name -> (function, tracks it enters, one-line description)
 ENTRIES = {
-    "Papilon 0.5, defaults": (papilon_default, ["standard", "hard", "s_curve"],
+    "Papilon 1.0, defaults": (papilon_default, ["standard", "hard", "s_curve"],
                               "carryover chosen by Bayes factor, downside-protected plan"),
-    "Papilon 0.5, curve shape chosen": (papilon_shape_chosen, ["s_curve"],
+    "Papilon 1.0, curve shape chosen": (papilon_shape_chosen, ["s_curve"],
                                         "also chooses concave or S-shaped saturation by Bayes factor"),
     "Least squares, fixed adstock": (least_squares, ["standard", "hard", "s_curve"],
                                      "reference baseline: regression on adstocked spend, no saturation"),

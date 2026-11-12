@@ -34,7 +34,7 @@ When using Papilon:
 1. **API Keys**: Never commit API keys to version control
    ```bash
    # Use environment variables
-   export ANTHROPIC_API_KEY="sk-..."
+   export API_KEY="..."
    ```
 
 2. **Data Handling**: Ensure PII is properly anonymized before processing

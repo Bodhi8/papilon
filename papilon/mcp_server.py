@@ -73,7 +73,14 @@ def build_server(box: ToolBox, name: str = "papilon"):
     def what_moves(node: str) -> str:
         return box.call_json("what_moves", {"node": node})
 
-    for fn in (brief, get_roi, response_curve, optimize_budget, evaluate_plan, value_of_lift_test, backtest, what_moves):
+    def plan_stability(total: float | None = None) -> str:
+        return box.call_json("plan_stability", {"total": total})
+
+    def forecast(periods: int, spend: dict[str, float] | None = None) -> str:
+        return box.call_json("forecast", {"periods": periods, "spend": spend or {}})
+
+    for fn in (brief, get_roi, response_curve, optimize_budget, evaluate_plan, value_of_lift_test, backtest,
+               plan_stability, forecast, what_moves):
         if fn.__name__ in desc:
             server.add_tool(fn, name=fn.__name__, description=desc[fn.__name__])
     return server

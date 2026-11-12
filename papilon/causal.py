@@ -12,10 +12,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import pandas as pd
+
+from ._deprecation import deprecated
 import networkx as nx
 from sklearn.feature_selection import f_regression
 
+@deprecated("1.0.0", "2.0.0", "papilon.discovery.discover_structure")
 def infer_causal_structure(df, threshold=0.01, visualize=True):
+    """Pairwise dependency screen (kept from 0.2). It tests each pair alone, so it cannot
+    tell direct from indirect dependence; ``papilon.discovery.discover_structure`` can."""
     numeric_df = df.select_dtypes(include='number').dropna()
     features = numeric_df.columns.tolist()
     G = nx.DiGraph()

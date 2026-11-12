@@ -1,0 +1,754 @@
+{
+ "papilon.GeoMMM": {
+  "methods": {
+   "backtest": [
+    "a",
+    "k"
+   ],
+   "contributions": [],
+   "decompose": [
+    "a",
+    "k"
+   ],
+   "forecast": [
+    "a",
+    "k"
+   ],
+   "future_frame": [
+    "a",
+    "k"
+   ],
+   "get_roi": [
+    "by_geo"
+   ],
+   "monitor": [
+    "a",
+    "k"
+   ],
+   "parameters": [],
+   "pooling": [],
+   "posterior_curves": [
+    "a",
+    "k"
+   ],
+   "response_curve": [
+    "a",
+    "k"
+   ],
+   "roas_draws": [],
+   "scenarios": [
+    "a",
+    "k"
+   ],
+   "self_check": [
+    "a",
+    "k"
+   ],
+   "value_of_lift_test": [
+    "a",
+    "k"
+   ]
+  },
+  "params": [
+   "data",
+   "target",
+   "media",
+   "date_col",
+   "geo_col",
+   "controls",
+   "yearly_seasonality",
+   "trend",
+   "l_max",
+   "period",
+   "seed",
+   "carryover",
+   "saturation",
+   "delayed",
+   "s_curve",
+   "alpha_prior",
+   "roas_prior_scale",
+   "escalate",
+   "unused"
+  ]
+ },
+ "papilon.Loop": {
+  "methods": {
+   "cycle": [
+    "new_data",
+    "tests"
+   ],
+   "history": [],
+   "record_test": [
+    "channel",
+    "start",
+    "end",
+    "lift",
+    "se",
+    "factor",
+    "spend_change",
+    "readout"
+   ]
+  },
+  "params": [
+   "data",
+   "target",
+   "media",
+   "date_col",
+   "controls",
+   "horizon",
+   "budget",
+   "explore",
+   "explore_block",
+   "recommend_tests",
+   "test_sd",
+   "test_weeks",
+   "carryover_candidates",
+   "model_kwargs",
+   "plan_kwargs",
+   "seed",
+   "n_sim"
+  ]
+ },
+ "papilon.MMM": {
+  "methods": {
+   "backtest": [
+    "holdout",
+    "n_starts"
+   ],
+   "compare_carryover": [
+    "candidates",
+    "n_draws",
+    "n_starts",
+    "accept",
+    "refine",
+    "max_refine"
+   ],
+   "compare_models": [
+    "candidates",
+    "n_draws",
+    "n_starts",
+    "accept",
+    "refine",
+    "max_refine"
+   ],
+   "contributions": [],
+   "decompose": [],
+   "evaluate_plan": [
+    "spend",
+    "against"
+   ],
+   "fit": [
+    "n_draws",
+    "n_starts",
+    "accept",
+    "refine",
+    "max_refine"
+   ],
+   "forecast": [
+    "future"
+   ],
+   "future_frame": [
+    "periods",
+    "spend",
+    "controls",
+    "start"
+   ],
+   "get_roi": [],
+   "indistinguishable_channels": [
+    "spend",
+    "band"
+   ],
+   "monitor": [
+    "new_data",
+    "coverage_alert",
+    "z_alert"
+   ],
+   "optimize_budget": [
+    "total",
+    "bounds",
+    "max_change",
+    "objective",
+    "quantile",
+    "support",
+    "support_quantile",
+    "bagging"
+   ],
+   "parameters": [],
+   "plan_stability": [
+    "total",
+    "n_splits",
+    "seed",
+    "plan_kwargs"
+   ],
+   "posterior_curves": [],
+   "response_curve": [
+    "channel",
+    "spend_levels"
+   ],
+   "roas_draws": [],
+   "save": [
+    "path"
+   ],
+   "scenarios": [
+    "plans"
+   ],
+   "self_check": [
+    "n_worlds",
+    "confounded",
+    "n_starts",
+    "seed"
+   ],
+   "value_of_lift_test": [
+    "sd",
+    "total",
+    "n_sim",
+    "seed",
+    "plan_kwargs"
+   ]
+  },
+  "params": [
+   "data",
+   "target",
+   "media",
+   "date_col",
+   "controls",
+   "yearly_seasonality",
+   "trend",
+   "l_max",
+   "delayed",
+   "period",
+   "seed",
+   "alpha_prior",
+   "roi_priors",
+   "roas_prior_scale",
+   "s_curve",
+   "carryover",
+   "saturation",
+   "time_varying",
+   "tv_basis",
+   "baseline_drift",
+   "organic",
+   "reach_frequency",
+   "lift_tests",
+   "escalate"
+  ]
+ },
+ "papilon.MarketingGraph": {
+  "methods": {
+   "adjustment_set": [
+    "channel",
+    "max_size"
+   ],
+   "audit": [
+    "df"
+   ],
+   "build_model": [
+    "df",
+    "date_col",
+    "kwargs"
+   ],
+   "carryover_candidates": [],
+   "channel": [
+    "name",
+    "stage",
+    "group",
+    "column"
+   ],
+   "check_against_data": [
+    "df",
+    "alpha",
+    "max_cond",
+    "propose_new"
+   ],
+   "confirm": [
+    "source",
+    "relation",
+    "target"
+   ],
+   "confounders": [
+    "channel"
+   ],
+   "describe": [],
+   "driver": [
+    "name",
+    "affects",
+    "column",
+    "modeled",
+    "kind"
+   ],
+   "edges": [],
+   "event": [
+    "name",
+    "affects",
+    "column"
+   ],
+   "experiment": [
+    "name",
+    "channel",
+    "roas",
+    "sd"
+   ],
+   "identification": [],
+   "mediates": [
+    "source",
+    "through"
+   ],
+   "model_kwargs": [
+    "df"
+   ],
+   "propose": [
+    "source",
+    "relation",
+    "target",
+    "by",
+    "note"
+   ],
+   "to_dict": [],
+   "to_jsonld": [],
+   "what_moves": [
+    "node"
+   ]
+  },
+  "params": [
+   "outcome"
+  ]
+ },
+ "papilon.ai.SYSTEM_PROMPT": {
+  "params": null
+ },
+ "papilon.ai.ToolBox": {
+  "methods": {
+   "call": [
+    "name",
+    "arguments"
+   ],
+   "call_json": [
+    "name",
+    "arguments"
+   ],
+   "specs": [
+    "format"
+   ]
+  },
+  "params": [
+   "model",
+   "graph"
+  ]
+ },
+ "papilon.ai.brief": {
+  "params": [
+   "model",
+   "plan",
+   "graph"
+  ]
+ },
+ "papilon.analyze_relationships": {
+  "params": [
+   "df",
+   "target",
+   "visualize"
+  ]
+ },
+ "papilon.count_microstates": {
+  "params": [
+   "data"
+  ]
+ },
+ "papilon.discover_structure": {
+  "params": [
+   "df",
+   "columns",
+   "alpha",
+   "max_cond",
+   "tiers",
+   "forbidden",
+   "preprocess",
+   "period"
+  ]
+ },
+ "papilon.discovery.discover_structure": {
+  "params": [
+   "df",
+   "columns",
+   "alpha",
+   "max_cond",
+   "tiers",
+   "forbidden",
+   "preprocess",
+   "period"
+  ]
+ },
+ "papilon.discovery.partial_correlation_test": {
+  "params": [
+   "data",
+   "i",
+   "j",
+   "cond",
+   "n"
+  ]
+ },
+ "papilon.energy_score": {
+  "params": [
+   "probabilities"
+  ]
+ },
+ "papilon.grid_search_optimize": {
+  "params": [
+   "df",
+   "feature_ranges",
+   "objective_fn",
+   "constraints"
+  ]
+ },
+ "papilon.infer_causal_structure": {
+  "params": [
+   "df",
+   "threshold",
+   "visualize"
+  ]
+ },
+ "papilon.io.from_bigquery": {
+  "params": [
+   "query",
+   "project",
+   "date_col"
+  ]
+ },
+ "papilon.io.from_snowflake": {
+  "params": [
+   "query",
+   "date_col",
+   "connect_kwargs"
+  ]
+ },
+ "papilon.io.long_to_wide": {
+  "params": [
+   "df",
+   "date_col",
+   "channel_col",
+   "value_col",
+   "index_cols"
+  ]
+ },
+ "papilon.io.read_sql": {
+  "params": [
+   "query",
+   "con",
+   "date_col",
+   "kwargs"
+  ]
+ },
+ "papilon.io.validate_frame": {
+  "params": [
+   "df",
+   "target",
+   "media",
+   "date_col",
+   "controls",
+   "geo_col"
+  ]
+ },
+ "papilon.joint_entropy": {
+  "params": [
+   "x",
+   "y"
+  ]
+ },
+ "papilon.loop.Loop": {
+  "methods": {
+   "cycle": [
+    "new_data",
+    "tests"
+   ],
+   "history": [],
+   "record_test": [
+    "channel",
+    "start",
+    "end",
+    "lift",
+    "se",
+    "factor",
+    "spend_change",
+    "readout"
+   ]
+  },
+  "params": [
+   "data",
+   "target",
+   "media",
+   "date_col",
+   "controls",
+   "horizon",
+   "budget",
+   "explore",
+   "explore_block",
+   "recommend_tests",
+   "test_sd",
+   "test_weeks",
+   "carryover_candidates",
+   "model_kwargs",
+   "plan_kwargs",
+   "seed",
+   "n_sim"
+  ]
+ },
+ "papilon.macrostate_entropy": {
+  "params": [
+   "microstates"
+  ]
+ },
+ "papilon.make_synthetic_geo_mmm": {
+  "params": [
+   "n_geos",
+   "n_weeks",
+   "seed",
+   "l_max"
+  ]
+ },
+ "papilon.make_synthetic_mmm": {
+  "params": [
+   "n_weeks",
+   "seed",
+   "l_max"
+  ]
+ },
+ "papilon.mmm.GateResult": {
+  "methods": {},
+  "params": [
+   "family",
+   "delayed",
+   "log_evidence",
+   "ess",
+   "verdict",
+   "history",
+   "pareto_k",
+   "s_curve",
+   "carryover",
+   "saturation",
+   "time_varying",
+   "method",
+   "modes"
+  ]
+ },
+ "papilon.mmm.MMM": {
+  "methods": {
+   "backtest": [
+    "holdout",
+    "n_starts"
+   ],
+   "compare_carryover": [
+    "candidates",
+    "n_draws",
+    "n_starts",
+    "accept",
+    "refine",
+    "max_refine"
+   ],
+   "compare_models": [
+    "candidates",
+    "n_draws",
+    "n_starts",
+    "accept",
+    "refine",
+    "max_refine"
+   ],
+   "contributions": [],
+   "decompose": [],
+   "evaluate_plan": [
+    "spend",
+    "against"
+   ],
+   "fit": [
+    "n_draws",
+    "n_starts",
+    "accept",
+    "refine",
+    "max_refine"
+   ],
+   "forecast": [
+    "future"
+   ],
+   "future_frame": [
+    "periods",
+    "spend",
+    "controls",
+    "start"
+   ],
+   "get_roi": [],
+   "indistinguishable_channels": [
+    "spend",
+    "band"
+   ],
+   "monitor": [
+    "new_data",
+    "coverage_alert",
+    "z_alert"
+   ],
+   "optimize_budget": [
+    "total",
+    "bounds",
+    "max_change",
+    "objective",
+    "quantile",
+    "support",
+    "support_quantile",
+    "bagging"
+   ],
+   "parameters": [],
+   "plan_stability": [
+    "total",
+    "n_splits",
+    "seed",
+    "plan_kwargs"
+   ],
+   "posterior_curves": [],
+   "response_curve": [
+    "channel",
+    "spend_levels"
+   ],
+   "roas_draws": [],
+   "save": [
+    "path"
+   ],
+   "scenarios": [
+    "plans"
+   ],
+   "self_check": [
+    "n_worlds",
+    "confounded",
+    "n_starts",
+    "seed"
+   ],
+   "value_of_lift_test": [
+    "sd",
+    "total",
+    "n_sim",
+    "seed",
+    "plan_kwargs"
+   ]
+  },
+  "params": [
+   "data",
+   "target",
+   "media",
+   "date_col",
+   "controls",
+   "yearly_seasonality",
+   "trend",
+   "l_max",
+   "delayed",
+   "period",
+   "seed",
+   "alpha_prior",
+   "roi_priors",
+   "roas_prior_scale",
+   "s_curve",
+   "carryover",
+   "saturation",
+   "time_varying",
+   "tv_basis",
+   "baseline_drift",
+   "organic",
+   "reach_frequency",
+   "lift_tests",
+   "escalate"
+  ]
+ },
+ "papilon.mmm.delayed_adstock": {
+  "params": [
+   "x",
+   "alpha",
+   "peak",
+   "l_max"
+  ]
+ },
+ "papilon.mmm.geometric_adstock": {
+  "params": [
+   "x",
+   "alpha",
+   "l_max"
+  ]
+ },
+ "papilon.mmm.hill": {
+  "params": [
+   "x",
+   "half_sat"
+  ]
+ },
+ "papilon.persist.FORMAT_VERSION": {
+  "params": null
+ },
+ "papilon.persist.load_model": {
+  "params": [
+   "path"
+  ]
+ },
+ "papilon.persist.save_model": {
+  "params": [
+   "model",
+   "path"
+  ]
+ },
+ "papilon.report.plot_decomposition": {
+  "params": [
+   "model"
+  ]
+ },
+ "papilon.report.plot_fit": {
+  "params": [
+   "model"
+  ]
+ },
+ "papilon.report.plot_loop": {
+  "params": [
+   "compare"
+  ]
+ },
+ "papilon.report.plot_plan": {
+  "params": [
+   "plan"
+  ]
+ },
+ "papilon.report.plot_response_curves": {
+  "params": [
+   "model",
+   "max_mult"
+  ]
+ },
+ "papilon.report.plot_roas": {
+  "params": [
+   "model"
+  ]
+ },
+ "papilon.report.report": {
+  "params": [
+   "model",
+   "path",
+   "plan",
+   "graph",
+   "title"
+  ]
+ },
+ "papilon.shannon_entropy": {
+  "params": [
+   "data"
+  ]
+ },
+ "papilon.simulate_kde_scenarios": {
+  "params": [
+   "df",
+   "columns",
+   "n_samples",
+   "bandwidth"
+  ]
+ },
+ "papilon.tracking.log_to_mlflow": {
+  "params": [
+   "model",
+   "run_name",
+   "experiment",
+   "tags",
+   "log_model_file"
+  ]
+ }
+}

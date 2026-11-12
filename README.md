@@ -5,25 +5,53 @@
 # Papilon
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.5.0-blue.svg" alt="Version 0.5.0">
+  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version 1.0.0">
   <img src="https://img.shields.io/badge/python-3.10+-green.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg" alt="Apache 2.0 license">
 </p>
 
 <p align="center"><em>"Does the flap of a butterfly's wings in Brazil set off a tornado in Texas?" Edward Lorenz</em></p>
 
-Papilon (French for butterfly) is a Bayesian marketing mix model you can check. It
-chooses its carryover and saturation shapes by Bayes factor, reports when its posterior
-can't be trusted, plans budgets for the case where it is wrong, and is graded in public
-against simulated brands with known returns. Version 0.5.0 adds a knowledge graph of
-the brand, self-checks, lift-test planning and grounded tools for AI assistants. It also
-includes the statistical-mechanics and simulation tools first released in 0.2.0.
+Papilon (French for butterfly) is a Bayesian marketing mix modeling framework you can
+check. It chooses each channel's carryover and saturation form by Bayes factor, reports
+when its posterior can't be trusted and falls back to a stronger sampler, plans budgets
+for the case where it is wrong, and is graded in public against simulated brands with
+known returns.
+
+Version 1.0 is a production release. It adds regional models with partial pooling,
+Weibull carryover, logistic and S-shaped curves, effects that change over time, reach and
+frequency, organic channels, lift tests calibrated on the weeks they ran, forward
+forecasts and scenarios, causal discovery, and the **learning loop**: a refresh cycle that
+recommends the experiment worth the most to the budget plan, separates channels the model
+cannot tell apart with a small budget-neutral pulse, and is itself graded quarter by
+quarter against known truth. Around the model: data checks, warehouse loaders, saved
+models that open without Papilon, MLflow logging, drift monitoring, HTML reports, CI on
+three operating systems and a stable API.
+
+Documentation: [guides and API reference](docs/index.md).
 
 ## Install
 
 ```bash
-pip install papilon
+pip install papilon                        # core
+pip install "papilon[mlflow,snowflake,mcp]"   # optional: tracking, warehouse, AI assistants
 ```
+
+## What 1.0 covers
+
+| Area | Capability |
+|---|---|
+| Model forms | geometric, delayed and Weibull carryover; Hill, S-curve and logistic saturation; time-varying effects; baseline drift; chosen per channel by Bayes factor |
+| Inputs | paid media, reach and frequency, organic channels, controls with their own contributions |
+| Calibration | lift tests in the likelihood on the weeks they ran; return priors |
+| Regions | `GeoMMM`: shared curves, regional effects pooled toward a common effect, integrated exactly |
+| Inference | importance sampling with a quality gate, mixture proposals over all modes, tempered SMC fallback |
+| Checking | backtest, self-check on simulated copies of the brand, confounding stress test, open leaderboard |
+| Planning | downside-protected plans, plan stability and bagging, forward forecasts, paired scenarios |
+| Learning | `Loop`: refresh, score, recommend the most valuable test, explore between indistinguishable channels |
+| Structure | knowledge graph with audit, back-door identification, PC causal discovery against the data |
+| Production | data checks, SQL, Snowflake and BigQuery loaders, save and load without pickles, MLflow, drift monitoring, HTML reports, AI tools and an MCP server |
+| Stability | semantic versioning, API snapshot test, deprecation policy, CI on Linux, Windows and macOS |
 
 ## Quickstart: a marketing mix model with a known truth
 
@@ -89,7 +117,32 @@ more than the brand has sustained before. Against the true response curves it ad
 $4,400 a week in sales, about 79% of the best possible reallocation ($5,600). The 0.3
 optimizer, on the same fit, moves $38,000 for $800.
 
-## New in 0.5: declare, check, decide
+## The learning loop (new in 1.0)
+
+A model refit every quarter on data shaped by its own plans can lock in its mistakes.
+`pp.Loop` feeds back only new information: new periods, experiment results on the weeks
+they ran, and a small budget-neutral pulse between the two channels the model can least
+tell apart. Each cycle values every possible lift test by its expected gain to the plan
+over a year, nets off the sales the holdout would give up, and recommends one only if it
+pays for itself.
+
+```python
+loop = pp.Loop(history, "sales", media, "date", controls=controls, horizon=13)
+cycle = loop.cycle()                                   # plan, weekly schedule, recommended test
+cycle = loop.cycle(new_data=last_quarter, tests=[measured_test])
+loop.history()
+```
+
+Graded against known truth over six quarters ([benchmarks/LOOP.md](benchmarks/LOOP.md)):
+on standard brands the loop's plans captured 59% of the best available gain by quarter
+six, against 42% for refitting each quarter and 34% for fitting once, at no net cost in
+sales. On brands with launches the model cannot see, its error in estimated returns fell
+from 0.59 to 0.39, against 0.50 for refitting alone. Testing every quarter learns faster
+still (78% captured, error 0.31) and costs 0.3% to 0.5% of sales while it learns.
+
+<p align="center"><img src="benchmarks/loop.png" alt="Error and share of best gain captured by quarter for four policies" width="760"></p>
+
+## Declare, check, decide (from 0.5)
 
 ```python
 g = pp.MarketingGraph("sales")                                   # what you believe about the brand
@@ -141,11 +194,16 @@ known returns, and [anyone can enter one](benchmarks/SUBMITTING.md).
 
 ## What Papilon does not do yet
 
-Papilon is deliberately small. It does not fit geo-level or product-level hierarchies,
-time-varying channel effects, or reach and frequency. Its case is narrower: it tells
-you when not to trust it, and its budget plans are tested against known truth. To
-grade any model on the same simulated brands, wrap it as a function and use
-`pycausalsim.futures.leaderboard`.
+- **Very large models.** The sampler keeps the sampled dimension small (regional effects
+  are integrated out exactly), which covers dozens of regions. A gradient-based sampler for
+  hundreds of free parameters, such as regional curve shapes or product hierarchies, is
+  planned as an optional backend.
+- **In geo models:** time-varying effects, reach and frequency, organic channels, lift tests
+  and forecasting. Fit a national model on summed data for those.
+- **Mediated effects** are declared in the knowledge graph and audited, not estimated.
+
+To grade any model, from any library, on the same simulated brands, wrap it as a function
+and use `pycausalsim.futures.leaderboard`.
 
 ## Budget plans that hold up
 
@@ -181,18 +239,19 @@ overstatement now averages +0.21 to +0.30 across the five settings, against +0.4
 To play a plan forward week by week with carryover and the full posterior, hand
 `model.posterior_curves()` to `pycausalsim.futures.media_plan_scm`.
 
-0.5.0 leaves these results in place: on the first 16 standard and 16 hard brands of
-the same benchmark, coverage and ROAS error match 0.4.1 to two decimals and fits take
-about 40% less time. Two further checks on the same seeds:
+1.0.0 leaves these results in place. On the [open leaderboard](benchmarks/LEADERBOARD.md)
+(16 simulated brands per track), compared with 0.5:
 
-- **S-shaped truth.** On 12 brands whose true curves are S-shaped
-  (`marketing_worlds(response="s_curve")`), the concave model's 90% ranges held the
-  true return 48% of the time and overrated channels by 0.82 on average. Letting
-  `compare_models()` choose the shape raised coverage to 85% and cut the error to
-  0.49. Plans captured about the same share of the best gain either way (32% and 30%).
-- **A baseline.** Least squares on adstocked spend, graded on the same 16 standard
-  brands: 45% coverage, and plans that lost money for half the brands. Papilon's
-  default: 95% coverage, 51% of the best gain, and no brand with a loss.
+| Track | 90% range holds the truth | Best gain captured | Plans that lost money |
+|---|---|---|---|
+| Standard | 95% → 98% | 51% → 48% | 0% → 0% |
+| Hard (unobserved launches) | 67% → 69% | 27% → 29% | 31% → 31% |
+| S-curve, shape chosen by the data | 81% → 81% | 38% → 37% | 0% → 0% |
+
+Differences of a few points are within the noise of 16 brands. A least-squares
+regression on adstocked spend, graded on the same standard brands, holds the truth 45%
+of the time and its plans lose money for half of them. Brands with launches the model
+cannot see remain the weak spot; the learning loop's tests are the remedy (see above).
 
 ## How the model is fit
 
@@ -237,7 +296,7 @@ The notebook `Papilon_Marketing_Optimization_Workflow.ipynb` walks through these
 
 ```bash
 pip install -e ".[dev]"
-pytest -m "not slow"     # about 30 seconds
+pytest -m "not slow"     # about three minutes
 pytest                   # includes the full Bayes-factor recovery test, a few minutes
 ```
 
@@ -245,11 +304,10 @@ pytest                   # includes the full Bayes-factor recovery test, a few m
 
 These are planned and **not in the released package**:
 
-- The trained amortized network from RFC 001 in place of the Laplace proposal
-- Geo-level models with partial pooling
-- Time-varying channel effects (creative wear-out)
+- An optional gradient-based (NUTS) sampler for very large models
+- The trained amortized network from RFC 001 as a proposal
+- Geo models with time-varying effects, lift tests and forecasting
 - Mediated effects estimated in the model, not only declared in the graph
-- Weibull adstock
 - Published leaderboard entries for other open-source models on the same worlds
 
 ## License
@@ -262,7 +320,7 @@ If you use Papilon in research, please cite:
 
 ```
 Curry, B. (2026). Papilon: Bayesian marketing mix modeling with gated importance
-sampling (Version 0.5.0). https://github.com/Bodhi8/papilon
+sampling (Version 1.0.0). https://github.com/Bodhi8/papilon
 ```
 
 Built by [Brian Curry](https://vector1.ai), Vector1 Research. Papilon, PyCausalSim and

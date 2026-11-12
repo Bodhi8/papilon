@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papilon"
-version = "0.5.0"
+version = "1.0.0"
 description = "A Bayesian marketing mix model you can check: graded against known truth, with a marketing knowledge graph, self-checks, lift-test planning and grounded tools for AI assistants"
 readme = "README.md"
 license = "Apache-2.0"
@@ -17,7 +17,7 @@ keywords = [
     "knowledge graph", "ontology", "lift test", "incrementality", "model context protocol", "simulation",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
@@ -41,6 +41,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "build>=1.0", "twine>=5.0"]
 mcp = ["mcp>=1.2"]
+mlflow = ["mlflow>=2.10"]
+snowflake = ["snowflake-connector-python[pandas]>=3.6"]
+bigquery = ["google-cloud-bigquery[pandas]>=3.17"]
+sql = ["sqlalchemy>=2.0"]
+all = ["mcp>=1.2", "mlflow>=2.10", "sqlalchemy>=2.0"]
 
 [project.urls]
 Homepage = "https://vector1.ai"

@@ -84,11 +84,11 @@ def brief(model, plan: pd.DataFrame | None = None, graph=None) -> dict:
     caveats = []
     gates = {}
     for name, g in model.gate_results.items():
-        gates[name] = {"verdict": g.verdict, "ess_fraction": g.ess, "pareto_k": g.pareto_k,
+        gates[name] = {"verdict": g.verdict, "method": g.method, "ess_fraction": g.ess, "pareto_k": g.pareto_k,
                        "probability": model.family_probabilities.get(name)}
     win = max(model.family_probabilities, key=model.family_probabilities.get)
     g = model.gate_results[win]
-    if g.verdict != "ACCEPT":
+    if not g.passed:
         caveats.append(f"The fit did not pass its own quality gate (verdict {g.verdict}); treat every estimate as provisional.")
     if np.isfinite(g.pareto_k) and g.pareto_k > 0.7:
         caveats.append(f"Importance weights are unreliable (Pareto k {g.pareto_k:.2f} > 0.7); intervals may be too narrow.")
@@ -98,8 +98,8 @@ def brief(model, plan: pd.DataFrame | None = None, graph=None) -> dict:
         channels[c] = {"roas": r.roas_mean, "roas_p05": r.roas_p05, "roas_p95": r.roas_p95,
                        "marginal_roas": r.mroas_mean, "share_of_sales": r.share_of_sales, "spend": r.spend,
                        "calibrated_by_lift_test": c in model.roi_priors,
-                       "carryover": "delayed" if c in model.delayed else "geometric",
-                       "saturation": "s_curve" if c in model.s_curve else "concave"}
+                       "carryover": model.family.carry[c], "saturation": model.family.sat[c],
+                       "time_varying": c in model.family.tv}
         if r.roas_p95 - r.roas_p05 > max(1.0, r.roas_mean) and c not in model.roi_priors:
             caveats.append(f"{c}: the 90% range ({r.roas_p05:.2f} to {r.roas_p95:.2f}) is wider than the estimate; "
                            "the data does not pin this channel down. A lift test would.")
@@ -155,6 +155,12 @@ _TOOLS = [
      {"type": "object", "properties": {"sd": {"type": "number", "description": "Standard error the test would achieve on ROAS."}}}),
     ("backtest", "Refit without the last N periods and forecast them; reports error against a naive forecast.",
      {"type": "object", "properties": {"holdout": {"type": "integer", "minimum": 1}}}),
+    ("plan_stability", "How much the recommended plan depends on which posterior draws built it; channels whose "
+                       "direction is not stable should not be moved on this model's say-so.",
+     {"type": "object", "properties": {"total": {"type": "number"}}}),
+    ("forecast", "Forecast the target over future periods under constant spend per channel, with a 90% range.",
+     {"type": "object", "properties": {"periods": {"type": "integer", "minimum": 1},
+                                       "spend": _SPEND}, "required": ["periods"]}),
     ("what_moves", "From the knowledge graph: everything downstream of a channel or driver, with the relation chain.",
      {"type": "object", "properties": {"node": {"type": "string"}}, "required": ["node"]}),
 ]
@@ -254,6 +260,18 @@ class ToolBox:
         bt = self.model.backtest(int(a.get("holdout", 13)))
         return {"summary": bt.attrs["summary"], "periods": bt}, [
             "A good forecast does not show channel credit is right; it only rules out a broken baseline."]
+
+    def _t_plan_stability(self, a):
+        total = a.get("total") or float(self.model.spend_raw.mean(axis=0).sum())
+        st = self.model.plan_stability(total)
+        unstable = list(st.index[~st.stable])
+        return st, ([f"Unstable moves: {', '.join(unstable)}. Hold those channels near current spend or test them."]
+                    if unstable else [])
+
+    def _t_forecast(self, a):
+        spend = {self._channel(c): v for c, v in (a.get("spend") or {}).items()}
+        fc = self.model.forecast(self.model.future_frame(int(a["periods"]), spend=spend))
+        return fc, ["Controls are held at their historical mean; trend and seasonality are extrapolated."]
 
     def _t_what_moves(self, a):
         if self.graph is None:

@@ -1,0 +1,34 @@
+site_name: Papilon
+site_description: A Bayesian marketing mix modeling framework you can check
+site_author: Brian Curry, Vector1 Research
+repo_url: https://github.com/Bodhi8/papilon
+copyright: Copyright 2024-2026 Brian Curry / Vector1 Research. Apache License 2.0.
+theme:
+  name: material
+  palette:
+    primary: deep purple
+  features: [navigation.sections, content.code.copy, search.suggest]
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options: {show_source: false, docstring_style: numpy, members_order: source}
+markdown_extensions: [tables, admonition, toc]
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Guides:
+      - Model families: model-families.md
+      - Calibrating with experiments: calibration.md
+      - Geo models: geo.md
+      - The knowledge graph: knowledge-graph.md
+      - Checking the model: checking.md
+      - Planning and forecasting: forecasting.md
+      - The learning loop: loop.md
+      - Running in production: production.md
+      - AI assistants: ai-assistants.md
+  - Reference:
+      - API: api.md
+      - API stability: api-stability.md
+      - Marketing vocabulary: vocabulary/README.md

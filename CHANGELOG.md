@@ -1,5 +1,69 @@
 # Changelog
 
+## 1.0.0 (unreleased)
+
+Papilon 1.0 is a production release: the public API is stable under semantic
+versioning (docs/api-stability.md), every release is tested on Linux, Windows and
+macOS, and fitted models can be saved, tracked, monitored and reported.
+
+### Added: modeling
+- Carryover families `geometric`, `delayed` and `weibull`; saturation families `hill`,
+  `s_curve` and `logistic`; chosen per channel (`carryover=`, `saturation=`) and compared
+  by Bayes factor with `compare_models`.
+- Time-varying channel effects (`time_varying=[...]`) for creative wear-out, and slow
+  baseline drift (`baseline_drift=`). Plans and forecasts use the latest effect.
+- Reach and frequency inputs (`reach_frequency=`), with the optimal frequency reported.
+- Organic channels (`organic=`), modeled with carryover and saturation, reported, and left
+  out of returns and plans.
+- Lift tests in the likelihood on the weeks they ran (`lift_tests=`): the model predicts the
+  lift of the same spend change in the same periods, carryover included.
+- `GeoMMM`: regional models with partial pooling of effects across regions. Baselines and
+  regional effects are integrated out exactly, so sampling stays low-dimensional.
+- `decompose()`: outcome split into baseline, each control and each channel.
+
+### Added: inference
+- Mixture proposals built from every distinct posterior mode found.
+- Tempered sequential Monte Carlo fallback when importance sampling fails its gate
+  (`escalate="smc"`, the default); `GateResult.method`, `.modes` and `.passed`.
+
+### Added: planning and forecasting
+- `forecast`, `future_frame` and `scenarios`: play spend plans forward period by period,
+  flighting included, with paired comparisons between plans.
+- `plan_stability`, `indistinguishable_channels`, and `optimize_budget(bagging=n)` for plans
+  that do not swing on noise between channels the posterior cannot rank.
+- `Loop`: the learning loop. Each cycle refreshes on new periods and experiment results,
+  scores the last forecast, recommends the lift test worth the most to the plan, and adds
+  a small budget-neutral exploration pulse between the channels the model can least tell
+  apart. `pycausalsim.futures.compare_loops` grades it against known truth.
+
+### Added: causal structure
+- `discover_structure`: the PC algorithm with partial-correlation tests, background tiers and
+  forbidden edges, after removing trend and season.
+- `MarketingGraph.adjustment_set`, `identification` (back-door criterion on the declared graph)
+  and `check_against_data` (declared relations against discovered ones).
+
+### Added: production
+- `MMM.save` / `MMM.load`: one zip of JSON, CSV and NumPy arrays; no pickles.
+- `papilon.io`: `validate_frame`, `read_sql`, `from_snowflake`, `from_bigquery`, `long_to_wide`.
+- `papilon.tracking.log_to_mlflow`.
+- `monitor(new_data)`: coverage, standardized error and spend outside support on new periods.
+- `papilon.report`: charts and a self-contained HTML report.
+- AI tools `plan_stability` and `forecast`, also over the Model Context Protocol.
+- CI on three operating systems, a documentation site, an API snapshot test, a deprecation
+  policy, and MAINTAINERS.md with a continuity and succession plan.
+- Optional extras: `mlflow`, `snowflake`, `bigquery`, `sql`, `all`.
+- `make_synthetic_geo_mmm` for testing regional models.
+
+### Changed
+- `GateResult` gains `carryover`, `saturation`, `time_varying`, `method`, `modes`, `passed`.
+- `posterior_curves()` adds `kernel` and `saturation`; `beta` is the effect as of the last period.
+- `parameters()` returns more columns when the model uses the new families.
+- Posterior draws differ from 0.5 for the same seed (the proposal is now a mixture); estimates
+  agree within their ranges.
+
+### Deprecated
+- `infer_causal_structure` (pairwise screen) in favor of `discover_structure`; removal in 2.0.
+
 ## 0.5.0 (2026-11-11)
 
 ### Added

@@ -1,16 +1,16 @@
 {
-  "papilon": "0.5.0",
-  "pycausalsim": "0.5.0",
+  "papilon": "1.0.0",
+  "pycausalsim": "0.6.0",
   "seed": 7,
   "brands_per_track": 16,
   "tracks": {
     "standard": {
-      "Papilon 0.5, defaults": {
+      "Papilon 1.0, defaults": {
         "brands": 16,
-        "coverage_90": 0.953125,
-        "abs_error": 0.3267230848369206,
-        "bias": 0.13026825916721593,
-        "plan_capture": 0.5124404738720727,
+        "coverage_90": 0.984375,
+        "abs_error": 0.3221860715189381,
+        "bias": 0.12794778915004812,
+        "plan_capture": 0.47617278580924316,
         "plan_lost_money": 0.0
       },
       "Least squares, fixed adstock": {
@@ -23,45 +23,45 @@
       }
     },
     "hard": {
-      "Papilon 0.5, defaults": {
+      "Papilon 1.0, defaults": {
         "brands": 16,
-        "coverage_90": 0.671875,
-        "abs_error": 0.9239807734796568,
-        "bias": 0.8195001539125819,
-        "plan_capture": 0.27437421814487184,
+        "coverage_90": 0.6875,
+        "abs_error": 0.9237139205734836,
+        "bias": 0.8178863548669792,
+        "plan_capture": 0.2920927987709699,
         "plan_lost_money": 0.3125
       },
       "Least squares, fixed adstock": {
         "brands": 16,
         "coverage_90": 0.421875,
-        "abs_error": 0.982707947538976,
-        "bias": 0.33550136654911494,
+        "abs_error": 0.9827079475389761,
+        "bias": 0.335501366549115,
         "plan_capture": -0.23633971950021607,
         "plan_lost_money": 0.4375
       }
     },
     "s_curve": {
-      "Papilon 0.5, defaults": {
+      "Papilon 1.0, defaults": {
         "brands": 16,
         "coverage_90": 0.546875,
-        "abs_error": 0.7965568509214506,
-        "bias": 0.7805069432072992,
-        "plan_capture": 0.3873628823283658,
-        "plan_lost_money": 0.0
+        "abs_error": 0.7964297566425151,
+        "bias": 0.7824297710157662,
+        "plan_capture": 0.38456845501415715,
+        "plan_lost_money": 0.0625
       },
-      "Papilon 0.5, curve shape chosen": {
+      "Papilon 1.0, curve shape chosen": {
         "brands": 16,
         "coverage_90": 0.8125,
-        "abs_error": 0.5152957355570749,
-        "bias": 0.4293625563668694,
-        "plan_capture": 0.3842476888822169,
+        "abs_error": 0.5188849565788145,
+        "bias": 0.43131274209639825,
+        "plan_capture": 0.3676952584915293,
         "plan_lost_money": 0.0
       },
       "Least squares, fixed adstock": {
         "brands": 16,
         "coverage_90": 0.640625,
         "abs_error": 0.7013063668320214,
-        "bias": 0.25497456928379736,
+        "bias": 0.2549745692837973,
         "plan_capture": 0.0367237867116144,
         "plan_lost_money": 0.5
       }

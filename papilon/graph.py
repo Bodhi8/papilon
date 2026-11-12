@@ -41,6 +41,7 @@ A graph makes assumptions explicit and checkable. It does not make them true.
 from __future__ import annotations
 
 import json
+from itertools import combinations
 
 import networkx as nx
 import numpy as np
@@ -278,6 +279,107 @@ class MarketingGraph:
         order = {"high": 0, "medium": 1, "low": 2, "info": 3}
         out = pd.DataFrame(rows, columns=["severity", "issue", "subject", "detail"])
         return out.sort_values("severity", key=lambda s: s.map(order), kind="stable", ignore_index=True)
+
+    # ------------------------------------------------------- identification
+    def _causal_digraph(self) -> nx.DiGraph:
+        G = nx.DiGraph()
+        G.add_nodes_from(self.g.nodes)
+        for a, b, k, d in self.g.edges(keys=True, data=True):
+            if k in ("drives", "sets_spend", "mediates") and d["status"] == "confirmed":
+                G.add_edge(a, b)
+        return G
+
+    def _observed(self, node) -> bool:
+        d = self.g.nodes[node]
+        return d.get("type") in ("Outcome", "Channel") or bool(d.get("column")) or bool(d.get("modeled"))
+
+    def adjustment_set(self, channel: str, max_size: int = 5) -> dict:
+        """What must be controlled for to read ``channel``'s total effect off the data.
+
+        Applies the back-door criterion to the confirmed causal relations: a set of
+        observed variables, none caused by the channel, that blocks every path from
+        the channel to the outcome that starts with an arrow into the channel. Returns
+        ``identified`` (whether such a set exists among observed variables), the
+        smallest such ``set``, and the unobserved drivers that ``blocking`` the
+        alternatives would have needed. Other channels count as observed.
+        """
+        self._need(channel, "Channel")
+        G = self._causal_digraph()
+        if self.outcome not in G or channel not in G:
+            return {"identified": True, "set": [], "unobserved": []}
+        desc = nx.descendants(G, channel)
+        cands = [v for v in G.nodes if v not in desc and v not in (channel, self.outcome)
+                 and self.g.nodes[v].get("type") in ("Channel", "Driver")]
+        observed = [v for v in cands if self._observed(v)]
+        H = G.copy()
+        H.remove_edges_from(list(G.out_edges(channel)))
+        sep = getattr(nx, "is_d_separator", None) or nx.d_separated
+        for size in range(min(max_size, len(observed)) + 1):
+            for S in combinations(observed, size):
+                if sep(H, {channel}, {self.outcome}, set(S)):
+                    return {"identified": True, "set": list(S), "unobserved": []}
+        for size in range(min(max_size, len(cands)) + 1):
+            for S in combinations(cands, size):
+                if sep(H, {channel}, {self.outcome}, set(S)):
+                    return {"identified": False, "set": [v for v in S if self._observed(v)],
+                            "unobserved": [v for v in S if not self._observed(v)]}
+        return {"identified": False, "set": [], "unobserved": []}
+
+    def identification(self) -> pd.DataFrame:
+        """One row per channel: is its effect identified from observed data, and controlling for what."""
+        rows = []
+        for c in self.channels:
+            r = self.adjustment_set(c)
+            tested = bool(self._out(c, "measured_by"))
+            rows.append({"channel": c, "identified": r["identified"], "adjust_for": ", ".join(r["set"]) or "nothing",
+                         "unobserved": ", ".join(r["unobserved"]), "lift_test": tested})
+        return pd.DataFrame(rows)
+
+    def check_against_data(self, df: pd.DataFrame, alpha: float = 0.01, max_cond: int = 3,
+                           propose_new: bool = False) -> pd.DataFrame:
+        """Compare the declared graph with what causal discovery finds in the data.
+
+        Runs :func:`papilon.discovery.discover_structure` on the observed columns
+        (trend and season removed, outcome in the last tier) and lists declared
+        relations the data does not support and dependencies the data shows that
+        nobody declared. Relations from channels to the outcome are left to the
+        marketing mix model: linear tests miss carried-over, saturating effects, so
+        their absence here is not evidence against them. With ``propose_new=True`` the
+        undeclared dependencies are added as proposed edges.
+        """
+        from .discovery import discover_structure
+        col_of = {n: (self.outcome if n == self.outcome else self.g.nodes[n].get("column"))
+                  for n in self.g.nodes if self.g.nodes[n].get("type") in ("Outcome", "Channel", "Driver")}
+        col_of = {n: c for n, c in col_of.items() if c and c in df.columns}
+        node_of = {c: n for n, c in col_of.items()}
+        found = discover_structure(df, list(col_of.values()), alpha=alpha, max_cond=max_cond,
+                                   tiers={self.outcome: 1} | {c: 0 for c in col_of.values() if c != self.outcome})
+        declared = {frozenset((col_of[a], col_of[b])) for a, b in self._causal_digraph().edges
+                    if a in col_of and b in col_of
+                    and not (b == self.outcome and self.g.nodes[a].get("type") == "Channel")}
+        seen = {frozenset((a, b)) for a, b in found.edges}
+        rows = []
+        for e in sorted(declared - seen, key=sorted):
+            a, b = sorted(e)
+            rows.append({"finding": "declared_not_supported", "between": f"{node_of[a]} - {node_of[b]}",
+                         "detail": "declared, but independent once other variables are accounted for "
+                                   f"(separated by: {', '.join(found.graph['sepsets'].get((a, b), found.graph['sepsets'].get((b, a), []))) or 'nothing'})"})
+        media_out = {frozenset((col_of[c], self.outcome)) for c in self.channels if c in col_of}
+        for e in sorted(seen - declared - media_out, key=sorted):
+            a, b = sorted(e)
+            und = found.edges[a, b]["undirected"] if found.has_edge(a, b) else found.edges[b, a]["undirected"]
+            src, dst = (a, b) if found.has_edge(a, b) and not und else (b, a) if not und else (a, b)
+            rows.append({"finding": "undeclared_dependence", "between": f"{node_of[src]} {'-' if und else '->'} {node_of[dst]}",
+                         "detail": f"dependent in the data (p = {found.edges[src, dst]['p_value']:.3g}) but not declared"})
+            if propose_new and not und:
+                rel = "drives" if node_of[dst] == self.outcome else (
+                    "sets_spend" if self.g.nodes[node_of[src]].get("type") == "Driver" else "mediates")
+                if self.g.nodes[node_of[dst]].get("type") in ("Channel", "Outcome"):
+                    try:
+                        self.propose(node_of[src], rel, node_of[dst], by="pc", note="found by causal discovery")
+                    except ValueError:
+                        pass
+        return pd.DataFrame(rows, columns=["finding", "between", "detail"])
 
     # ------------------------------------------------------------ exporting
     def to_dict(self) -> dict:
