@@ -58,3 +58,5 @@ jobs:
           path: dist/
 
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true   # a release and its tag both trigger this; the second run finds the version uploaded
