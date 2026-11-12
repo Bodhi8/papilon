@@ -1,12 +1,14 @@
 name: publish
 
-# Publishes to PyPI when a GitHub release is published. Uses PyPI trusted
+# Publishes to PyPI when a version tag (v1.2.3) is pushed or a GitHub release is published. Uses PyPI trusted
 # publishing: no token or password is stored anywhere. PyPI accepts the upload
 # only from this workflow, in this repository, in the "pypi" environment.
 
 on:
   release:
     types: [published]
+  push:
+    tags: ["v*"]
 
 permissions:
   contents: read
