@@ -11,7 +11,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Marketing mix modeling with Papilon's gated importance sampling (RFC 001)."""
+"""Marketing mix modeling with Papilon's gated importance sampling."""
 
 from .model import MMM, GateResult
 from .transforms import delayed_adstock, geometric_adstock, hill

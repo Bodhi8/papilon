@@ -255,12 +255,10 @@ cannot see remain the weak spot; the learning loop's tests are the remedy (see a
 
 ## How the model is fit
 
-`pp.MMM` follows the inference path in
-[RFC 001, amortized structural inference](papilon-amortized-inference-design.md):
+`pp.MMM` is fit in four steps:
 
 1. **Proposal.** A distribution over the media parameters (carryover, saturation,
-   effect size). Since 0.3.0, a Laplace fit at the posterior mode stands in for the
-   trained amortized network the RFC describes.
+   effect size), built from every posterior mode the search finds.
 2. **Importance sampling** against the exact posterior. Baseline, trend, seasonality,
    controls and noise are integrated out in closed form, so sampling covers only the
    media parameters.
@@ -271,8 +269,7 @@ cannot see remain the weak spot; the learning loop's tests are the remedy (see a
    likelihood, so `compare_carryover()` can choose between geometric and delayed
    adstock per channel.
 
-Channel effects are constrained to be positive. The single-channel prototypes behind
-this design, with their results, are in [`prototypes/`](prototypes/).
+Channel effects are constrained to be positive.
 
 ## Other tools (from 0.2.0)
 
@@ -305,7 +302,6 @@ pytest                   # includes the full Bayes-factor recovery test, a few m
 These are planned and **not in the released package**:
 
 - An optional gradient-based (NUTS) sampler for very large models
-- The trained amortized network from RFC 001 as a proposal
 - Geo models with time-varying effects, lift tests and forecasting
 - Mediated effects estimated in the model, not only declared in the graph
 - Published leaderboard entries for other open-source models on the same worlds
