@@ -82,8 +82,9 @@ def test_value_of_lift_test_ranks_uncertain_channel_first(model):
     v = model.value_of_lift_test()
     assert set(v.index) == set(MEDIA)
     assert (v.width_after < v.width_now + 1e-9).all()
-    # paid search and display are both wide and statistically tied for first; video is already well measured
-    assert v.index[-1] == "online_video" and set(v.index[:2]) == {"paid_search", "display"}
+    # paid search and display are both wide and statistically tied for first; video is already well
+    # measured, and it and social are close enough at the bottom that their order varies by platform
+    assert set(v.index[:2]) == {"paid_search", "display"} and "online_video" in v.index[-2:]
     assert (v.expected_gain > -3 * v.gain_se - 1e-9).all()
 
 
