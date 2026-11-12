@@ -43,8 +43,10 @@ def log_to_mlflow(model, run_name: str | None = None, experiment: str | None = N
         mlflow.set_tags({"papilon_version": __version__, "model_kind": type(model).__name__, **(tags or {})})
         mlflow.log_params({"family": best, "target": model.target, "media": ",".join(model.media),
                            "periods": len(model.data), "l_max": model.l_max, "seed": model.seed})
-        mlflow.log_metrics({"log_evidence": gate.log_evidence, "ess_fraction": gate.ess,
-                            "gate_passed": float(gate.passed)})
+        metrics = {"log_evidence": gate.log_evidence, "ess_fraction": gate.ess, "gate_passed": float(gate.passed)}
+        if gate.method == "nuts":
+            metrics.update(rhat=gate.rhat, ess_bulk=gate.ess_bulk, divergences=float(gate.divergences))
+        mlflow.log_metrics({k: float(v) for k, v in metrics.items() if v is not None and v == v})
         roi = model.get_roi()
         for c, r in roi.iterrows():
             mlflow.log_metrics({f"roas_{c}": r.roas_mean, f"roas_p05_{c}": r.roas_p05, f"roas_p95_{c}": r.roas_p95})

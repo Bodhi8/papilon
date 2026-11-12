@@ -31,7 +31,7 @@ import pandas as pd
 
 __all__ = ["save_model", "load_model", "FORMAT_VERSION"]
 
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2          # 2 (Papilon 1.1): sampler diagnostics, regional curves and geo lift tests
 
 
 def _jsonable(x):
@@ -99,8 +99,11 @@ def load_model(path):
                     time_varying=fam["time_varying"], seed=meta["seed"], **cfg)
     model._draws = draws
     model._fam = Family(model.channels, fam["carryover"], fam["saturation"], fam.get("time_varying"))
+    nan = float("nan")
     model.gate_results = {k: GateResult(**{**v, "history": [tuple(h) for h in v["history"]],
-                                           "pareto_k": float("nan") if v.get("pareto_k") is None else v["pareto_k"]})
+                                           **{f: nan for f in ("log_evidence", "ess", "pareto_k", "rhat", "ess_bulk")
+                                              if f in v and v[f] is None},
+                                           "pareto_k": nan if v.get("pareto_k") is None else v["pareto_k"]})
                           for k, v in meta["gate_results"].items()}
     model.family_probabilities = meta["family_probabilities"]
     model._roi_cache = model._roas_cache = None

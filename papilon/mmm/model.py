@@ -28,6 +28,10 @@ Baseline terms (intercept, trend, seasonality, controls) and the noise variance
 are integrated out in closed form with a conjugate prior, so sampling runs only
 over the nonlinear media parameters. Channel effects are constrained positive.
 
+Since 1.1 the same posterior can be sampled with NUTS on an optional JAX backend
+(``sampler="nuts"``, or ``"auto"`` for models too large for the gate); see
+``docs/inference.md``.
+
 Since 0.5 the posterior is evaluated for whole batches of draws at once, the
 saturation curve can be S-shaped per channel (Hill with a fitted shape), and the
 model can check itself: ``backtest()`` on held-out periods, ``self_check()`` on
@@ -55,6 +59,8 @@ _TV_SD = 0.25                                        # prior sd of time-varying 
 _WK_MU, _WK_SD = float(np.log(1.5)), 0.5             # Weibull carryover shape
 _WL_MU, _WL_SD = float(np.log(2.0)), 0.6             # Weibull carryover scale, in periods
 _RFS_MU, _RFS_SD = float(np.log(2.0)), 0.3           # frequency-response shape for reach and frequency channels
+SAMPLERS = ("auto", "gate", "nuts")
+AUTO_NUTS_DIM = 40                                   # sampler="auto" uses NUTS above this many sampled parameters
 
 
 class Family:
@@ -146,13 +152,21 @@ class GateResult:
     carryover: dict = field(default_factory=dict)
     saturation: dict = field(default_factory=dict)
     time_varying: list[str] = field(default_factory=list)
-    method: str = "importance"      # "importance" or "smc" (the fallback when importance sampling fails)
+    method: str = "importance"      # "importance", "smc" (the fallback when importance sampling fails) or "nuts"
     modes: int = 1                  # distinct posterior modes found and used in the proposal
+    rhat: float = float("nan")      # NUTS: largest split R-hat over the sampled parameters
+    ess_bulk: float = float("nan")  # NUTS: smallest effective sample size over the sampled parameters
+    divergences: int = 0            # NUTS: divergent transitions after warm-up
 
     @property
     def passed(self) -> bool:
-        """True when the posterior draws can be relied on: the gate accepted, or the fallback sampler ran."""
-        return self.verdict in ("ACCEPT", "SMC")
+        """True when the posterior draws can be relied on.
+
+        Gate: importance sampling was accepted, or the SMC fallback ran. NUTS: the
+        largest R-hat is below 1.01, the smallest effective sample size is at least
+        400 and no transition diverged (verdict "NUTS"; otherwise "NUTS_FAILED").
+        """
+        return self.verdict in ("ACCEPT", "SMC", "NUTS")
 
 
 class MMM:
@@ -206,6 +220,11 @@ class MMM:
     escalate : what to do when importance sampling fails its gate: "smc" (default) runs a
         tempered sequential Monte Carlo sampler from the same proposal; "none" keeps the
         failed draws and reports the verdict.
+    sampler : "auto" (default), "gate" or "nuts". "gate" is the importance sampler with
+        its quality gate and SMC fallback. "nuts" is the gradient-based sampler on the
+        optional JAX backend (``pip install "papilon[jax]"``); it reports R-hat, effective
+        sample size and divergences in place of a marginal likelihood. "auto" uses the
+        gate unless the model samples more than 40 parameters and the backend is installed.
     period : periods per year (52.18 for weekly data).
     seed : random seed for reproducible results.
     """
@@ -236,16 +255,18 @@ class MMM:
         reach_frequency: dict[str, tuple[str, str]] | None = None,
         lift_tests=None,
         escalate: str = "smc",
+        sampler: str = "auto",
     ) -> None:
         self._config = dict(target=target, media=list(media), date_col=date_col,
                             controls=list(controls or []), yearly_seasonality=yearly_seasonality,
                             trend=trend, l_max=l_max, period=period, alpha_prior=alpha_prior,
                             roi_priors=dict(roi_priors or {}), roas_prior_scale=roas_prior_scale,
                             tv_basis=tv_basis, baseline_drift=baseline_drift, organic=list(organic or []),
-                            reach_frequency=dict(reach_frequency or {}), escalate=escalate,
+                            reach_frequency=dict(reach_frequency or {}), escalate=escalate, sampler=sampler,
                             lift_tests=None if lift_tests is None else pd.DataFrame(lift_tests).to_dict("records"))
         if escalate not in ("smc", "none"):
             raise ValueError('escalate must be "smc" or "none"')
+        self.sampler = _check_sampler(sampler)
         df = data.sort_values(date_col).reset_index(drop=True)
         self.data, self.target, self.media = df, target, list(media)
         self.organic = list(organic or [])
@@ -853,8 +874,48 @@ class MMM:
                          method=method, modes=len(modes))
         return res, z, w, fam
 
-    def _store_draws(self, fam, z, w, n_keep=2000):
-        idx = self.rng.choice(len(w), n_keep, p=w)
+    def _use_nuts(self, fam: Family) -> bool:
+        """Whether this fit runs NUTS: asked for by name, or "auto" on a model too large for the gate."""
+        if self.sampler == "gate":
+            return False
+        from . import _jax
+        if self.sampler == "nuts":
+            if not _jax.available():
+                raise ImportError(_jax._HINT)
+            return True
+        dim = self._dim(fam)
+        if dim <= AUTO_NUTS_DIM:
+            return False
+        if not _jax.available():
+            import warnings
+            warnings.warn(f"this model samples {dim} parameters, more than the importance sampler handles well "
+                          f'({AUTO_NUTS_DIM}); install the NUTS backend with pip install "papilon[jax]". '
+                          "Fitting with the gate.", RuntimeWarning, stacklevel=3)
+            return False
+        return True
+
+    def _nuts(self, name, fam, chains, warmup, samples, target_accept):
+        """Sample the posterior with NUTS; returns the same tuple as :meth:`_gate`."""
+        from . import _jax
+        r = _jax.sample(self, fam, chains=chains, warmup=warmup, samples=samples, target_accept=target_accept,
+                        seed=int(self.seed))
+        z = r["draws"]
+        verdict = "NUTS" if r["passed"] else "NUTS_FAILED"
+        frac = float(r["ess_bulk"] / len(z)) if np.isfinite(r["ess_bulk"]) else float("nan")
+        res = GateResult(name, fam.delayed, float("nan"), frac, verdict, [(0, round(frac, 3), verdict)],
+                         s_curve=fam.s_curve, carryover=dict(fam.carry), saturation=dict(fam.sat),
+                         time_varying=list(fam.tv), method="nuts", modes=1, rhat=r["rhat"],
+                         ess_bulk=r["ess_bulk"], divergences=r["divergences"])
+        return res, z, np.full(len(z), 1.0 / len(z)), fam
+
+    def _pick(self, w, n_keep, thin):
+        """Rows to keep: resampled by weight (gate), or evenly thinned (NUTS draws are already unweighted)."""
+        if thin:
+            return np.unique(np.linspace(0, len(w) - 1, min(n_keep, len(w))).round().astype(int))
+        return self.rng.choice(len(w), n_keep, p=w)
+
+    def _store_draws(self, fam, z, w, n_keep=2000, thin=False):
+        idx = self._pick(w, n_keep, thin)
         self._draws, _ = self._unpack_batch(z[idx], fam)
         self._fam = fam
         self._roi_cache = self._roas_cache = None
@@ -863,13 +924,24 @@ class MMM:
         return self._fam.name()
 
     def fit(self, n_draws: int = 4000, n_starts: int = 3, accept: float = 0.10,
-            refine: float = 0.01, max_refine: int = 3) -> "MMM":
-        """Fit the model with the family set in the constructor."""
+            refine: float = 0.01, max_refine: int = 3, chains: int = 4, warmup: int = 1000,
+            samples: int = 1000, target_accept: float = 0.9) -> "MMM":
+        """Fit the model with the family set in the constructor.
+
+        ``n_draws``, ``n_starts``, ``accept``, ``refine`` and ``max_refine`` steer the
+        gated importance sampler. ``chains``, ``warmup``, ``samples`` (per chain) and
+        ``target_accept`` steer NUTS and are ignored by the gate. Which one runs is
+        set by ``sampler`` in the constructor; ``gate_results`` records it.
+        """
         name = self._family_name()
-        res, z, w, fam = self._gate(name, self._fam, n_draws, n_starts, accept, refine, max_refine)
+        nuts = self._use_nuts(self._fam)
+        if nuts:
+            res, z, w, fam = self._nuts(name, self._fam, chains, warmup, samples, target_accept)
+        else:
+            res, z, w, fam = self._gate(name, self._fam, n_draws, n_starts, accept, refine, max_refine)
         self.gate_results = {name: res}
         self.family_probabilities = {name: 1.0}
-        self._store_draws(fam, z, w)
+        self._store_draws(fam, z, w, thin=True) if nuts else self._store_draws(fam, z, w)
         return self
 
     def compare_models(self, candidates: dict[str, dict], n_draws: int = 4000,
@@ -890,7 +962,13 @@ class MMM:
         equal prior odds. A wrong curve can fit history and still extrapolate badly,
         which is what a reallocation asks of it; this lets the data vote on the form
         before a plan is built on it.
+
+        Bayes factors need the marginal likelihood, which the gate estimates and NUTS
+        does not: comparison always runs the gate, and raises under ``sampler="nuts"``.
         """
+        if self.sampler == "nuts":
+            raise ValueError('model comparison needs the marginal likelihood, which NUTS does not estimate; '
+                             'compare with sampler="gate" or "auto", then refit the winner with NUTS')
         fitted = {}
         for name, spec in candidates.items():
             fam = Family.from_spec(self.channels, spec)
@@ -1606,6 +1684,12 @@ class MMM:
         """Load a model saved with :meth:`save`, without refitting."""
         from ..persist import load_model
         return load_model(path)
+
+def _check_sampler(sampler: str) -> str:
+    if sampler not in SAMPLERS:
+        raise ValueError(f'sampler must be one of {SAMPLERS}; got {sampler!r}')
+    return sampler
+
 
 def _weighted_quantile(v: np.ndarray, w: np.ndarray, q: float) -> float:
     o = np.argsort(v)

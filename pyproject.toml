@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "papilon"
-version = "1.0.0"
+version = "1.1.0"
 description = "A Bayesian marketing mix model you can check: graded against known truth, with a marketing knowledge graph, self-checks, lift-test planning and grounded tools for AI assistants"
 readme = "README.md"
 license = "Apache-2.0"
@@ -41,6 +41,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "build>=1.0", "twine>=5.0"]
 mcp = ["mcp>=1.2"]
+jax = ["jax>=0.4.30", "numpyro>=0.15"]   # NUTS sampler for very large models (sampler="nuts")
 mlflow = ["mlflow>=2.10"]
 snowflake = ["snowflake-connector-python[pandas]>=3.6"]
 bigquery = ["google-cloud-bigquery[pandas]>=3.17"]
@@ -59,4 +60,7 @@ include = ["papilon*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["slow: full Bayes-factor fit, takes a few minutes"]
+markers = [
+    "slow: full Bayes-factor fit, takes a few minutes",
+    "jax: needs the optional JAX backend (pip install \"papilon[jax]\")",
+]

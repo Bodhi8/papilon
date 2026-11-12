@@ -27,7 +27,7 @@ from .relationships import analyze_relationships
 from .simulation import simulate_kde_scenarios
 from .states import count_microstates, macrostate_entropy
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = [
     "MMM",

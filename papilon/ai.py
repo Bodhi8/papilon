@@ -86,10 +86,14 @@ def brief(model, plan: pd.DataFrame | None = None, graph=None) -> dict:
     for name, g in model.gate_results.items():
         gates[name] = {"verdict": g.verdict, "method": g.method, "ess_fraction": g.ess, "pareto_k": g.pareto_k,
                        "probability": model.family_probabilities.get(name)}
+        if g.method == "nuts":
+            gates[name].update(rhat=g.rhat, ess_bulk=g.ess_bulk, divergences=g.divergences)
     win = max(model.family_probabilities, key=model.family_probabilities.get)
     g = model.gate_results[win]
     if not g.passed:
         caveats.append(f"The fit did not pass its own quality gate (verdict {g.verdict}); treat every estimate as provisional.")
+    if g.method == "nuts" and g.divergences > 0:
+        caveats.append(f"The sampler diverged {g.divergences} times; parts of the posterior may be unexplored.")
     if np.isfinite(g.pareto_k) and g.pareto_k > 0.7:
         caveats.append(f"Importance weights are unreliable (Pareto k {g.pareto_k:.2f} > 0.7); intervals may be too narrow.")
     channels = {}

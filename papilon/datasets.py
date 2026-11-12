@@ -88,16 +88,22 @@ def make_synthetic_mmm(n_weeks: int = 156, seed: int = 2026, l_max: int = 8):
     return df, truth
 
 
-def make_synthetic_geo_mmm(n_geos: int = 8, n_weeks: int = 156, seed: int = 2026, l_max: int = 8):
+def make_synthetic_geo_mmm(n_geos: int = 8, n_weeks: int = 156, seed: int = 2026, l_max: int = 8,
+                           regional_curves: float = 0.0):
     """Weekly sales and spend for ``n_geos`` regions of different sizes, with the truth that generated them.
 
     Three channels share carryover and curve shapes across regions; each region's
     effect size is the pooled effect times a regional factor (log-normal, sd 0.25).
     Regions plan spend separately, which is what lets a geo model separate channels.
 
+    ``regional_curves`` above zero also gives every region its own curve: carryover
+    retention and half-saturation spread around the shared values with that standard
+    deviation (on the logit and log scales). Zero, the default, keeps shared curves and
+    the data of earlier releases.
+
     Returns a long DataFrame (date, region, search, social, video, sales) and a dict
-    with the pooled parameters, each region's effects and the true national and
-    regional ROAS.
+    with the pooled parameters, each region's effects and curve parameters, and the
+    true national and regional ROAS.
     """
     rng = np.random.default_rng(seed)
     t = np.arange(n_weeks)
@@ -108,6 +114,7 @@ def make_synthetic_geo_mmm(n_geos: int = 8, n_weeks: int = 156, seed: int = 2026
               "social": {"alpha": 0.45, "half_sat": 1.1, "mu": 0.18},
               "video": {"alpha": 0.6, "half_sat": 1.3, "mu": 0.25}}
     rows, regional, num, den = [], {}, np.zeros(3), np.zeros(3)
+    shape_rng = np.random.default_rng([seed, 1])          # its own stream, so shared-curve data is unchanged
     for g in range(n_geos):
         size = rng.uniform(0.5, 3.0)
         base = 600 * size * (1 + 0.1 * season) + 20 * size * t / 52.18
@@ -115,13 +122,20 @@ def make_synthetic_geo_mmm(n_geos: int = 8, n_weeks: int = 156, seed: int = 2026
         spend, eff_g = {}, {}
         for j, c in enumerate(media):
             x = size * 40 * rng.gamma(4, 1, n_weeks) / 4 * (1 + 0.3 * np.sin(2 * np.pi * t / 26 + rng.uniform(0, 6)))
-            ad = geometric_adstock(x / x.mean(), shared[c]["alpha"], l_max)
+            alpha, half_sat = shared[c]["alpha"], shared[c]["half_sat"]
+            if regional_curves > 0:
+                e = regional_curves * shape_rng.standard_normal(2)
+                alpha = float(1 / (1 + np.exp(-(np.log(alpha / (1 - alpha)) + e[0]))))
+                half_sat = float(half_sat * np.exp(e[1]))
+            ad = geometric_adstock(x / x.mean(), alpha, l_max)
             b = shared[c]["mu"] * np.exp(rng.normal(0, 0.25))
-            eff = b * hill(ad, shared[c]["half_sat"]) * base.mean()
+            eff = b * hill(ad, half_sat) * base.mean()
             spend[c], eff_g[c] = x, b
             sales += eff
             num[j] += eff.sum(); den[j] += x.sum()
-            regional.setdefault(f"r{g}", {})[c] = {"beta": float(b), "roas": float(eff.sum() / x.sum())}
+            regional.setdefault(f"r{g}", {})[c] = {"beta": float(b), "roas": float(eff.sum() / x.sum()),
+                                                    "alpha": float(alpha), "half_sat": float(half_sat),
+                                                    "max_effect": float(b * base.mean())}
         sales += rng.normal(0, 0.03 * base.mean(), n_weeks)
         rows.append(pd.DataFrame({"date": dates, "region": f"r{g}", **{c: np.round(spend[c], 2) for c in media},
                                   "sales": np.round(sales, 2)}))
