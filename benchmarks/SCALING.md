@@ -11,7 +11,7 @@ regional_curves=0.5)`: three channels, 156 weeks), graded against the truth that
 - **gate, regional curves**: `regional_curves=True` on the gate, for small region counts only.
 - **NUTS, regional curves**: `regional_curves=True` on the JAX backend, the model 1.1 adds.
 
-Machine: 2 CPU cores, Linux-6.18.44-fc-v378-x86_64-with-glibc2.39, Python 3.13.18, Papilon 1.1.0, JAX 0.12.0.1, NumPyro 0.22.0. No GPU. Default sampler settings (gate: 4,000 draws, two starts;
+Machine: 2 CPU cores, Linux-6.18.44-fc-v445-x86_64-with-glibc2.39, Python 3.13.18, Papilon 1.1.0, JAX 0.12.0.1, NumPyro 0.22.0. No GPU. Default sampler settings (gate: 4,000 draws, two starts;
 NUTS: four chains, 1,000 warm-up and 1,000 kept draws each). Seconds are wall-clock for one fit, compilation
 included, with nothing else running. One simulated dataset per region count, so small differences in the
 accuracy columns at 4 and 8 regions (12 and 24 region-channel returns) are noise.
@@ -43,6 +43,9 @@ accuracy columns at 4 and 8 regions (12 and 24 region-channel returns) are noise
 | 100 | gate, shared curves | 12 | 4 min | ACCEPT | 0.31 | 62% | 0.10 | 82% | 0.08 |
 | 100 | NUTS, shared curves | 12 | 106 s | passed (R-hat 1.002, ESS 5841, 0 divergent) | 0.31 | 62% | 0.10 | 81% | 0.09 |
 | 100 | NUTS, regional curves | 618 | 11 min | passed (R-hat 1.007, ESS 422, 0 divergent) | 0.29 | 87% | 0.08 | 90% | 0.05 |
+| 200 | gate, shared curves | 12 | 11 min | ACCEPT | 0.31 | 64% | 0.10 | 84% | 0.05 |
+| 200 | NUTS, shared curves | 12 | 4 min | passed (R-hat 1.004, ESS 6274, 0 divergent) | 0.32 | 64% | 0.10 | 84% | 0.04 |
+| 200 | NUTS, regional curves | 1,218 | 31 min | FAILED (R-hat 1.013, ESS 266, 0 divergent) | 0.30 | 90% | 0.09 | 91% | 0.04 |
 
 ## Reading the columns
 
