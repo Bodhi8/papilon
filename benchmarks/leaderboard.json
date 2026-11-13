@@ -1,16 +1,24 @@
 {
-  "papilon": "1.0.0",
+  "papilon": "1.1.0",
   "pycausalsim": "0.6.0",
   "seed": 7,
   "brands_per_track": 16,
   "tracks": {
     "standard": {
-      "Papilon 1.0, defaults": {
+      "Papilon 1.1, defaults": {
         "brands": 16,
         "coverage_90": 0.984375,
         "abs_error": 0.3221860715189381,
         "bias": 0.12794778915004812,
         "plan_capture": 0.47617278580924316,
+        "plan_lost_money": 0.0
+      },
+      "Papilon 1.1, NUTS sampler": {
+        "brands": 16,
+        "coverage_90": 0.96875,
+        "abs_error": 0.3157567418318985,
+        "bias": 0.12167522588617466,
+        "plan_capture": 0.4802857177718061,
         "plan_lost_money": 0.0
       },
       "Least squares, fixed adstock": {
@@ -23,7 +31,7 @@
       }
     },
     "hard": {
-      "Papilon 1.0, defaults": {
+      "Papilon 1.1, defaults": {
         "brands": 16,
         "coverage_90": 0.6875,
         "abs_error": 0.9237139205734836,
@@ -31,17 +39,25 @@
         "plan_capture": 0.2920927987709699,
         "plan_lost_money": 0.3125
       },
+      "Papilon 1.1, NUTS sampler": {
+        "brands": 16,
+        "coverage_90": 0.6875,
+        "abs_error": 0.9185158413326879,
+        "bias": 0.8051134952345596,
+        "plan_capture": 0.28019873991582966,
+        "plan_lost_money": 0.25
+      },
       "Least squares, fixed adstock": {
         "brands": 16,
         "coverage_90": 0.421875,
-        "abs_error": 0.9827079475389761,
-        "bias": 0.335501366549115,
+        "abs_error": 0.982707947538976,
+        "bias": 0.33550136654911494,
         "plan_capture": -0.23633971950021607,
         "plan_lost_money": 0.4375
       }
     },
     "s_curve": {
-      "Papilon 1.0, defaults": {
+      "Papilon 1.1, defaults": {
         "brands": 16,
         "coverage_90": 0.546875,
         "abs_error": 0.7964297566425151,
@@ -49,7 +65,7 @@
         "plan_capture": 0.38456845501415715,
         "plan_lost_money": 0.0625
       },
-      "Papilon 1.0, curve shape chosen": {
+      "Papilon 1.1, curve shape chosen": {
         "brands": 16,
         "coverage_90": 0.8125,
         "abs_error": 0.5188849565788145,
@@ -57,11 +73,19 @@
         "plan_capture": 0.3676952584915293,
         "plan_lost_money": 0.0
       },
+      "Papilon 1.1, NUTS sampler": {
+        "brands": 16,
+        "coverage_90": 0.53125,
+        "abs_error": 0.7946750067944841,
+        "bias": 0.7778688290912004,
+        "plan_capture": 0.3862340398632768,
+        "plan_lost_money": 0.0
+      },
       "Least squares, fixed adstock": {
         "brands": 16,
         "coverage_90": 0.640625,
         "abs_error": 0.7013063668320214,
-        "bias": 0.2549745692837973,
+        "bias": 0.25497456928379736,
         "plan_capture": 0.0367237867116144,
         "plan_lost_money": 0.5
       }

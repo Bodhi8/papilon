@@ -28,3 +28,6 @@ model.scenarios({"current": model.future_frame(13),
 
 `scenarios` evaluates every plan on the same posterior draws, so `prob_beats_first` is
 the probability the plan beats the first one, not two separate guesses.
+
+Geo models forecast per region and nationally with the same three methods; see
+[Geo models](geo.md).

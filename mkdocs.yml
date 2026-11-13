@@ -22,6 +22,7 @@ nav:
       - Model families: model-families.md
       - Calibrating with experiments: calibration.md
       - Geo models: geo.md
+      - Inference, the gate and NUTS: inference.md
       - The knowledge graph: knowledge-graph.md
       - Checking the model: checking.md
       - Planning and forecasting: forecasting.md

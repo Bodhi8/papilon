@@ -12,6 +12,9 @@ that moves budget should be able to show that it is right, and say when it is no
 - **Check before you trust.** Every fit passes a quality gate, falls back to a stronger
   sampler when it fails, and can be graded on simulated copies of your own brand with
   known returns.
+- **Scale when you need to.** An optional gradient-based sampler (NUTS, on a JAX backend)
+  fits regional models with a curve per region across hundreds of markets, and reports
+  into the same quality gate.
 - **Plan for being wrong.** Budget plans maximize the downside, report whether they
   are stable, and can be played forward week by week.
 - **Learn on purpose.** The learning loop recommends the experiment worth the most to
@@ -22,7 +25,7 @@ that moves budget should be able to show that it is right, and say when it is no
   AI assistants that cannot invent numbers.
 
 ```bash
-pip install papilon            # add [mcp], [mlflow], [snowflake] or [bigquery] as needed
+pip install papilon            # add [jax], [mcp], [mlflow], [snowflake] or [bigquery] as needed
 ```
 
 ```python
@@ -39,4 +42,4 @@ model.optimize_budget(total=df[model.media].sum(axis=1).mean())
 
 Start with the [quickstart](quickstart.md). Papilon is research software from Vector1
 Research, free under the Apache License 2.0; see [API stability](api-stability.md) for
-what 1.0 promises.
+what 1.x promises.

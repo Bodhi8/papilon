@@ -62,6 +62,18 @@ def papilon_shape_chosen(df, info):
             "plan": m.optimize_budget(info["total"])["optimal_spend"].to_numpy()}
 
 
+def papilon_nuts(df, info):
+    """Papilon fitted with the NUTS sampler. NUTS estimates no Bayes factor, so the family is fixed
+    (online video delayed) instead of chosen."""
+    import papilon as pp
+    ch = info["media"]
+    m = pp.MMM(df, target=info["target"], media=ch, date_col=info["date_col"], controls=info["controls"], seed=11,
+               delayed=["online_video"], sampler="nuts").fit()
+    roi = m.get_roi()
+    return {"roas": {c: (roi.loc[c, "roas_mean"], roi.loc[c, "roas_p05"], roi.loc[c, "roas_p95"]) for c in ch},
+            "plan": m.optimize_budget(info["total"])["optimal_spend"].to_numpy()}
+
+
 def least_squares(df, info):
     from pycausalsim.futures import ols_estimator
     return ols_estimator()(df, info)
@@ -69,13 +81,21 @@ def least_squares(df, info):
 
 # name -> (function, tracks it enters, one-line description)
 ENTRIES = {
-    "Papilon 1.0, defaults": (papilon_default, ["standard", "hard", "s_curve"],
+    "Papilon 1.1, defaults": (papilon_default, ["standard", "hard", "s_curve"],
                               "carryover chosen by Bayes factor, downside-protected plan"),
-    "Papilon 1.0, curve shape chosen": (papilon_shape_chosen, ["s_curve"],
+    "Papilon 1.1, curve shape chosen": (papilon_shape_chosen, ["s_curve"],
                                         "also chooses concave or S-shaped saturation by Bayes factor"),
+    "Papilon 1.1, NUTS sampler": (papilon_nuts, ["standard", "hard", "s_curve"],
+                                  'the optional JAX backend (`sampler="nuts"`), online video delayed, no family choice'),
     "Least squares, fixed adstock": (least_squares, ["standard", "hard", "s_curve"],
                                      "reference baseline: regression on adstocked spend, no saturation"),
 }
+
+
+def _entries() -> dict:
+    """The entries that can run here: the NUTS entry needs the optional backend."""
+    from papilon.mmm import _jax
+    return {n: e for n, e in ENTRIES.items() if e[0] is not papilon_nuts or _jax.available()}
 
 
 def _one(job):
@@ -102,7 +122,7 @@ def main():
     ap.add_argument("--worlds", type=int, default=16)
     ap.add_argument("--jobs", type=int, default=2)
     a = ap.parse_args()
-    jobs = [(t, n, i) for n, (_, tracks, _) in ENTRIES.items() for t in tracks for i in range(a.worlds)]
+    jobs = [(t, n, i) for n, (_, tracks, _) in _entries().items() for t in tracks for i in range(a.worlds)]
     out: dict = {}
     with Pool(a.jobs) as pool:
         for track, name, recs in pool.imap_unordered(_one, jobs):
@@ -139,7 +159,7 @@ def main():
               "  with each channel free between zero and three times its history. Can be negative.",
               "- **Plans that lost money**: share of brands where the recommended plan did worse than the current mix.",
               "", "## Entries", ""]
-    lines += [f"- **{n}**: {d}." for n, (_, _, d) in ENTRIES.items()]
+    lines += [f"- **{n}**: {d}." for n, (_, _, d) in _entries().items()]
     lines += ["", "Simulated brands are kinder than real data in ways the generator does not capture. A good score",
               "here is necessary, not sufficient."]
     (HERE / "LEADERBOARD.md").write_text("\n".join(lines) + "\n")

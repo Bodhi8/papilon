@@ -5,16 +5,26 @@
     "a",
     "k"
    ],
+   "compare_models": [
+    "candidates",
+    "args",
+    "kwargs"
+   ],
    "contributions": [],
    "decompose": [
     "a",
     "k"
    ],
    "forecast": [
+    "future",
     "a",
     "k"
    ],
    "future_frame": [
+    "periods",
+    "spend",
+    "controls",
+    "start",
     "a",
     "k"
    ],
@@ -25,18 +35,22 @@
     "a",
     "k"
    ],
-   "parameters": [],
+   "parameters": [
+    "by_geo"
+   ],
    "pooling": [],
    "posterior_curves": [
     "a",
     "k"
    ],
+   "regional_spread": [],
    "response_curve": [
     "a",
     "k"
    ],
    "roas_draws": [],
    "scenarios": [
+    "plans",
     "a",
     "k"
    ],
@@ -68,6 +82,9 @@
    "alpha_prior",
    "roas_prior_scale",
    "escalate",
+   "lift_tests",
+   "sampler",
+   "regional_curves",
    "unused"
   ]
  },
@@ -102,6 +119,8 @@
    "recommend_tests",
    "test_sd",
    "test_weeks",
+   "test_share",
+   "payback_periods",
    "carryover_candidates",
    "model_kwargs",
    "plan_kwargs",
@@ -142,7 +161,11 @@
     "n_starts",
     "accept",
     "refine",
-    "max_refine"
+    "max_refine",
+    "chains",
+    "warmup",
+    "samples",
+    "target_accept"
    ],
    "forecast": [
     "future"
@@ -230,7 +253,8 @@
    "organic",
    "reach_frequency",
    "lift_tests",
-   "escalate"
+   "escalate",
+   "sampler"
   ]
  },
  "papilon.MarketingGraph": {
@@ -485,6 +509,8 @@
    "recommend_tests",
    "test_sd",
    "test_weeks",
+   "test_share",
+   "payback_periods",
    "carryover_candidates",
    "model_kwargs",
    "plan_kwargs",
@@ -502,7 +528,8 @@
    "n_geos",
    "n_weeks",
    "seed",
-   "l_max"
+   "l_max",
+   "regional_curves"
   ]
  },
  "papilon.make_synthetic_mmm": {
@@ -527,7 +554,10 @@
    "saturation",
    "time_varying",
    "method",
-   "modes"
+   "modes",
+   "rhat",
+   "ess_bulk",
+   "divergences"
   ]
  },
  "papilon.mmm.MMM": {
@@ -563,7 +593,11 @@
     "n_starts",
     "accept",
     "refine",
-    "max_refine"
+    "max_refine",
+    "chains",
+    "warmup",
+    "samples",
+    "target_accept"
    ],
    "forecast": [
     "future"
@@ -651,7 +685,8 @@
    "organic",
    "reach_frequency",
    "lift_tests",
-   "escalate"
+   "escalate",
+   "sampler"
   ]
  },
  "papilon.mmm.delayed_adstock": {

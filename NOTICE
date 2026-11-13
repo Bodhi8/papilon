@@ -10,7 +10,9 @@ or marks, except as required to describe the origin of the work (see Section 6
 of the License and TRADEMARKS.md).
 
 Papilon depends on, but does not include, NumPy, SciPy, pandas, scikit-learn,
-NetworkX, Matplotlib and seaborn, each distributed under its own license.
+NetworkX, Matplotlib and seaborn, each distributed under its own license. The
+optional NUTS backend (the "jax" extra) uses, and does not include, JAX and NumPyro,
+each distributed under the Apache License, Version 2.0.
 
 Methods first published in this repository, with the release that introduced them
 (see CHANGELOG.md and docs/design/ for dated descriptions):
@@ -23,6 +25,10 @@ Methods first published in this repository, with the release that introduced the
   - The learning loop with value-of-information experiment choice and budget-neutral
     exploration between indistinguishable channels, graded against known truth;
     conjugate geo pooling with sampled shared curves (1.0.0)
+  - Regional curve shapes with partial pooling, sampled with NUTS while each region's
+    baseline and effects stay integrated out; regional lift tests as weighted
+    observations of an integrated-out effect; sampler diagnostics (R-hat, effective
+    sample size, divergences) folded into the inference gate (1.1.0)
 
 The marketing vocabulary at https://vector1.ai/ns/marketing# is maintained by
 Vector1 Research. Derivative works must keep this NOTICE (Apache License 2.0,

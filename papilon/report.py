@@ -174,7 +174,9 @@ def report(model, path, plan: pd.DataFrame | None = None, graph=None, title: str
     sections = []
     sections.append(f"<h2>Fit quality</h2><p>Model family <b>{html.escape(best)}</b>; quality gate "
                     f"<b>{g.verdict}</b> ({g.method}, effective sample {g.ess:.0%}, {g.modes} mode"
-                    f"{'s' if g.modes > 1 else ''}).</p>")
+                    f"{'s' if g.modes > 1 else ''}"
+                    + (f"; R-hat {g.rhat:.3f}, smallest effective sample {g.ess_bulk:.0f}, {g.divergences} divergent"
+                       if g.method == "nuts" else "") + ").</p>")
     if len(model.gate_results) > 1:
         fam = pd.DataFrame({k: {"log evidence": v.log_evidence, "probability": model.family_probabilities[k],
                                 "verdict": v.verdict} for k, v in model.gate_results.items()}).T

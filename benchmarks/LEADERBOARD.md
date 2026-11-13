@@ -11,7 +11,8 @@ Search spend follows demand; launches are visible in spend.
 
 | Entry | 90% range holds the truth | ROAS error | Bias | Best gain captured | Plans that lost money |
 |---|---|---|---|---|---|
-| Papilon 1.0, defaults | 98% | 0.32 | +0.13 | 48% | 0% |
+| Papilon 1.1, NUTS sampler | 97% | 0.32 | +0.12 | 48% | 0% |
+| Papilon 1.1, defaults | 98% | 0.32 | +0.13 | 48% | 0% |
 | Least squares, fixed adstock | 45% | 0.66 | -0.33 | -24% | 50% |
 
 ## Track: hard
@@ -20,7 +21,8 @@ Adds unobserved launches that lift spend and sales together, and creative wear-o
 
 | Entry | 90% range holds the truth | ROAS error | Bias | Best gain captured | Plans that lost money |
 |---|---|---|---|---|---|
-| Papilon 1.0, defaults | 69% | 0.92 | +0.82 | 29% | 31% |
+| Papilon 1.1, defaults | 69% | 0.92 | +0.82 | 29% | 31% |
+| Papilon 1.1, NUTS sampler | 69% | 0.92 | +0.81 | 28% | 25% |
 | Least squares, fixed adstock | 42% | 0.98 | +0.34 | -24% | 44% |
 
 ## Track: s_curve
@@ -29,8 +31,9 @@ Every channel's true response is S-shaped.
 
 | Entry | 90% range holds the truth | ROAS error | Bias | Best gain captured | Plans that lost money |
 |---|---|---|---|---|---|
-| Papilon 1.0, defaults | 55% | 0.80 | +0.78 | 38% | 6% |
-| Papilon 1.0, curve shape chosen | 81% | 0.52 | +0.43 | 37% | 0% |
+| Papilon 1.1, NUTS sampler | 53% | 0.79 | +0.78 | 39% | 0% |
+| Papilon 1.1, defaults | 55% | 0.80 | +0.78 | 38% | 6% |
+| Papilon 1.1, curve shape chosen | 81% | 0.52 | +0.43 | 37% | 0% |
 | Least squares, fixed adstock | 64% | 0.70 | +0.25 | 4% | 50% |
 
 ## Reading the columns
@@ -43,8 +46,9 @@ Every channel's true response is S-shaped.
 
 ## Entries
 
-- **Papilon 1.0, defaults**: carryover chosen by Bayes factor, downside-protected plan.
-- **Papilon 1.0, curve shape chosen**: also chooses concave or S-shaped saturation by Bayes factor.
+- **Papilon 1.1, defaults**: carryover chosen by Bayes factor, downside-protected plan.
+- **Papilon 1.1, curve shape chosen**: also chooses concave or S-shaped saturation by Bayes factor.
+- **Papilon 1.1, NUTS sampler**: the optional JAX backend (`sampler="nuts"`), online video delayed, no family choice.
 - **Least squares, fixed adstock**: reference baseline: regression on adstocked spend, no saturation.
 
 Simulated brands are kinder than real data in ways the generator does not capture. A good score
