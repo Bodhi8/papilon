@@ -196,7 +196,7 @@ def _geo(model, fam):
     from jax.scipy.linalg import cho_solve
     from jax.scipy.special import gammaln
 
-    media, G, K, p, T = model.media, len(model.geos), len(model.media), model._p, model._T_fit
+    media, G, K, T = model.media, len(model.geos), len(model.media), model._T_fit
     d0 = sum(len(x) for x in model._layout(fam))
     W = jnp.asarray(np.stack(model._Wg))                         # (G, K, T, L)
     X, Yn = jnp.asarray(np.stack(model._X)), jnp.asarray(model._Yn)

@@ -81,8 +81,10 @@ class GeoMMM(MMM):
         The sampled parameters then grow with the number of regions, so "auto" fits
         with NUTS when the JAX backend is installed.
 
-    Not yet available in geo models: time-varying effects, reach and frequency and
-    organic channels. Fit a national :class:`papilon.MMM` for those.
+    Notes
+    -----
+    Geo models do not yet have time-varying effects, reach and frequency or organic
+    channels. Fit a national :class:`papilon.MMM` for those.
     """
 
     def __init__(self, data: pd.DataFrame, target: str, media: list[str], date_col: str, geo_col: str,

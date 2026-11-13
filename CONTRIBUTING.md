@@ -6,7 +6,9 @@ https://github.com/Bodhi8/papilon/issues.
 ## Code
 
 1. Fork, branch from `main`, and install with `pip install -e ".[dev]"`.
-2. Add or update tests in `tests/`. Run `pytest -m "not slow"` (about a minute).
+2. Add or update tests in `tests/`. Run `pytest -m "not slow and not jax"` (a few minutes; needs no
+   optional dependency). If you touch the model or the samplers, also run `pytest -m jax` after
+   `pip install -e ".[dev,jax]"`.
 3. A change to a model default needs a result from `benchmarks/recovery.py` in the
    pull request: defaults are set by how plans and estimates score against known truth.
 4. Sign off your commits (`git commit -s`).

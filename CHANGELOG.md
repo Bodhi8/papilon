@@ -1,6 +1,78 @@
 # Changelog
 
-## 1.0.0 (unreleased)
+## 1.1.0 (unreleased)
+
+Papilon 1.1 adds a gradient-based sampler for models too large for importance sampling,
+and uses it for regional models with a curve per region across hundreds of markets. The
+default install still needs only NumPy and SciPy, and default fits give the numbers they
+gave in 1.0.0.
+
+### Added: inference
+- `sampler="auto" | "gate" | "nuts"` on `MMM` and `GeoMMM`. `"gate"` is the importance
+  sampler with its quality gate and SMC fallback. `"nuts"` is the No-U-Turn sampler on an
+  optional JAX backend. `"auto"`, the default, uses the gate unless the model samples more
+  than 40 parameters and the backend is installed.
+- Optional extra `papilon[jax]` (JAX and NumPyro). The backend is a second implementation
+  of the same collapsed posterior: baselines, noise and regional effects stay integrated
+  out, and NUTS samples the curve parameters. Tests hold the two implementations to six
+  decimal places for every model family.
+- `fit(chains=4, warmup=1000, samples=1000, target_accept=0.9)` steer NUTS.
+- `GateResult.rhat`, `.ess_bulk` and `.divergences`, with `method="nuts"` and the verdicts
+  `NUTS` and `NUTS_FAILED`. `GateResult.passed` is true for NUTS when every R-hat is below
+  1.01, every parameter has at least 100 effective draws per chain and no transition
+  diverged. The loop, reports, MLflow logging and AI tools read `passed` as before.
+
+### Added: geo models
+- `GeoMMM(regional_curves=True)`: every region gets its own carryover and saturation
+  parameters, partially pooled toward the shared ones, with `regional_spread()` and
+  `parameters(by_geo=True)`. Regional effects are still integrated out exactly.
+- `GeoMMM(lift_tests=...)`: lift tests by region, calibrating the region and, through
+  pooling, the others.
+- `GeoMMM.future_frame`, `forecast` and `scenarios`: forecasts per region and nationally.
+- `get_roi(by_geo=True)` adds each region's marginal return (`mroas_mean`, `mroas_p05`,
+  `mroas_p95`).
+- `make_synthetic_geo_mmm(regional_curves=...)` simulates regions with their own curves;
+  the truth it returns gains each region's `alpha`, `half_sat` and `max_effect`.
+- `examples/regional_curves_nuts.py`.
+
+### Added: benchmarks and documentation
+- `benchmarks/scaling.py` and [SCALING.md](benchmarks/SCALING.md): time and accuracy
+  against known truth from 4 to @@MAXG@@ regions, gate against NUTS.
+- A NUTS entry on the leaderboard.
+- An inference guide (`docs/inference.md`) and RFC 004 (`docs/design/004-nuts-backend.md`).
+- CI job `jax-backend`: the extra on Linux, Windows and macOS. The main test job installs
+  neither JAX nor NumPyro and deselects the backend tests (`-m "not slow and not jax"`).
+
+### Changed
+- The default `sampler="auto"` sends a model with more than 40 sampled parameters to NUTS
+  when the backend is installed. Benchmark result behind the threshold
+  ([SCALING.md](benchmarks/SCALING.md)): @@THRESHOLD@@
+  Smaller models, and every install without the backend, fit as in 1.0.0.
+- Saved models are written in format version 2 (sampler, diagnostics, regional draws, geo
+  lift tests). 1.1 reads files written by 1.0; 1.0 refuses 1.1 files with a message to
+  upgrade.
+- Geo models with very many regions compute returns region by region instead of holding
+  every draw, region, period and channel in memory at once.
+
+### Benchmarks
+- Default fits: 21 seeded outputs (returns, gate statistics, plans, forecasts, the SMC
+  fallback, family comparison, geo returns and pooling) recorded on 1.0.0 are reproduced
+  bit for bit by 1.1.0 with the same library versions; `tests/test_v110.py` keeps a subset
+  as a regression test, and loads model files saved by 1.0.0.
+- Leaderboard, rerun: the default entries score exactly as in 1.0.0. The NUTS sampler,
+  with the family fixed, scores within sampling noise of the gate: on standard brands the
+  90% range holds the truth 97% of the time (gate 98%) and plans capture 48% of the best
+  gain (gate 48%); on hard brands 69% and 28% (gate 69% and 29%).
+- Loop benchmark, rerun: reproduces the 1.0.0 results to ten decimal places.
+- Scaling: @@SCALING@@
+
+### Not in this release
+- Bayes factors under NUTS: `compare_models` and `compare_carryover` always use the gate
+  and raise under `sampler="nuts"`. In geo models families are compared with shared curves.
+- Lift tests measured as one number over several regions.
+- Time-varying effects, reach and frequency and organic channels in geo models.
+
+## 1.0.0 (2026-11-12)
 
 Papilon 1.0 is a production release: the public API is stable under semantic
 versioning (docs/api-stability.md), every release is tested on Linux, Windows and

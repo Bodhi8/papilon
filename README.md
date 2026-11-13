@@ -5,7 +5,7 @@
 # Papilon
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version 1.1.0">
   <img src="https://img.shields.io/badge/python-3.10+-green.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg" alt="Apache 2.0 license">
 </p>
@@ -28,6 +28,12 @@ quarter against known truth. Around the model: data checks, warehouse loaders, s
 models that open without Papilon, MLflow logging, drift monitoring, HTML reports, CI on
 three operating systems and a stable API.
 
+Version 1.1 adds an optional gradient-based sampler (NUTS, on a JAX backend) for models
+too large for importance sampling, and uses it for regional models with a curve per
+region across hundreds of markets. Regional models also gain lift tests and forecasts.
+The default install still needs only NumPy and SciPy, and default fits give the numbers
+they gave in 1.0.
+
 Documentation: [guides and API reference](docs/index.md).
 
 ## Install
@@ -35,17 +41,18 @@ Documentation: [guides and API reference](docs/index.md).
 ```bash
 pip install papilon                        # core
 pip install "papilon[mlflow,snowflake,mcp]"   # optional: tracking, warehouse, AI assistants
+pip install "papilon[jax]"                 # optional: NUTS sampler for very large models
 ```
 
-## What 1.0 covers
+## What 1.1 covers
 
 | Area | Capability |
 |---|---|
 | Model forms | geometric, delayed and Weibull carryover; Hill, S-curve and logistic saturation; time-varying effects; baseline drift; chosen per channel by Bayes factor |
 | Inputs | paid media, reach and frequency, organic channels, controls with their own contributions |
-| Calibration | lift tests in the likelihood on the weeks they ran; return priors |
-| Regions | `GeoMMM`: shared curves, regional effects pooled toward a common effect, integrated exactly |
-| Inference | importance sampling with a quality gate, mixture proposals over all modes, tempered SMC fallback |
+| Calibration | lift tests in the likelihood on the weeks they ran, nationally and by region; return priors |
+| Regions | `GeoMMM`: shared curves or a curve per region, regional effects pooled toward a common effect and integrated exactly, regional lift tests, forecasts |
+| Inference | importance sampling with a quality gate, mixture proposals over all modes, tempered SMC fallback; optional NUTS on a JAX backend for hundreds to thousands of parameters, reporting R-hat, effective sample size and divergences into the same gate |
 | Checking | backtest, self-check on simulated copies of the brand, confounding stress test, open leaderboard |
 | Planning | downside-protected plans, plan stability and bagging, forward forecasts, paired scenarios |
 | Learning | `Loop`: refresh, score, recommend the most valuable test, explore between indistinguishable channels |
@@ -142,6 +149,35 @@ still (78% captured, error 0.31) and costs 0.3% to 0.5% of sales while it learns
 
 <p align="center"><img src="benchmarks/loop.png" alt="Error and share of best gain captured by quarter for four policies" width="760"></p>
 
+## Very large models (new in 1.1)
+
+The importance sampler is accurate because it samples few parameters: baselines, noise
+and each region's effects are integrated out exactly. A curve per region cannot be
+integrated out, so the sampled parameters grow with the regions, and past about 40 the
+sampler stops covering the truth. 1.1 adds the No-U-Turn sampler on an optional JAX
+backend for those models. It samples the same posterior, with the same quantities
+integrated out, and reports into the same quality gate.
+
+```python
+# pip install "papilon[jax]"
+df, truth = pp.make_synthetic_geo_mmm(n_geos=200, regional_curves=0.5)     # 200 regions, each with its own curves
+model = pp.GeoMMM(df, "sales", ["search", "social", "video"], "date", geo_col="region",
+                  regional_curves=True).fit()                               # sampler="auto" picks NUTS here
+
+g = model.gate_results[model.family.name()]
+g.passed, g.rhat, g.ess_bulk, g.divergences       # the fit's own check
+model.get_roi(by_geo=True)                        # returns and marginal returns per region
+model.regional_spread()                           # how much curves differ across regions
+model.forecast(model.future_frame(13))            # per region, with the national total
+```
+
+@@README_SCALING@@
+
+`sampler="gate"` and `sampler="nuts"` force either sampler on any model; on the bundled
+four-channel brand they give the same returns, the gate in about a second and NUTS in
+about ten. NUTS estimates no marginal likelihood, so Bayes-factor comparison stays on the
+gate. See [inference](docs/inference.md) and [RFC 004](docs/design/004-nuts-backend.md).
+
 ## Declare, check, decide (from 0.5)
 
 ```python
@@ -194,12 +230,13 @@ known returns, and [anyone can enter one](benchmarks/SUBMITTING.md).
 
 ## What Papilon does not do yet
 
-- **Very large models.** The sampler keeps the sampled dimension small (regional effects
-  are integrated out exactly), which covers dozens of regions. A gradient-based sampler for
-  hundreds of free parameters, such as regional curve shapes or product hierarchies, is
-  planned as an optional backend.
-- **In geo models:** time-varying effects, reach and frequency, organic channels, lift tests
-  and forecasting. Fit a national model on summed data for those.
+@@README_LIMITS@@
+- **In geo models:** time-varying effects, reach and frequency, organic channels, the
+  backtest and the self-check, and lift tests measured as one number over several regions.
+  Fit a national model on summed data for those.
+- **Bayes factors with NUTS.** NUTS estimates no marginal likelihood. Families are compared
+  with the gate (in geo models, with shared curves) and the winner refitted.
+- **Product hierarchies** and other large structures besides regions.
 - **Mediated effects** are declared in the knowledge graph and audited, not estimated.
 
 To grade any model, from any library, on the same simulated brands, wrap it as a function
@@ -253,6 +290,11 @@ regression on adstocked spend, graded on the same standard brands, holds the tru
 of the time and its plans lose money for half of them. Brands with launches the model
 cannot see remain the weak spot; the learning loop's tests are the remedy (see above).
 
+1.1.0 leaves the default entries exactly where they were: rerun on the same brands, they
+score identically. The NUTS sampler, with the family fixed in advance, scores within
+sampling noise of them (standard brands: 97% of ranges hold the truth and plans capture
+48% of the best gain; hard brands: 69% and 28%).
+
 ## How the model is fit
 
 `pp.MMM` follows the inference path in
@@ -270,6 +312,11 @@ cannot see remain the weak spot; the learning loop's tests are the remedy (see a
 4. **Bayes factors.** The same importance weights estimate each family's marginal
    likelihood, so `compare_carryover()` can choose between geometric and delayed
    adstock per channel.
+
+5. **NUTS for large models (1.1).** Above about 40 sampled parameters, with the optional
+   JAX backend installed, the same posterior is sampled with the No-U-Turn sampler, and
+   the gate reads R-hat, effective sample size and divergences in place of the
+   importance-sampling checks ([RFC 004](docs/design/004-nuts-backend.md)).
 
 Channel effects are constrained to be positive. The single-channel prototypes behind
 this design, with their results, are in [`prototypes/`](prototypes/).
@@ -296,17 +343,19 @@ The notebook `Papilon_Marketing_Optimization_Workflow.ipynb` walks through these
 
 ```bash
 pip install -e ".[dev]"
-pytest -m "not slow"     # about three minutes
-pytest                   # includes the full Bayes-factor recovery test, a few minutes
+pytest -m "not slow and not jax"   # about three minutes; needs no optional dependency
+pytest -m slow                     # the full Bayes-factor recovery test, a few minutes
+pip install -e ".[dev,jax]"
+pytest -m jax                      # the NUTS backend, about two minutes
 ```
 
 ## Roadmap
 
 These are planned and **not in the released package**:
 
-- An optional gradient-based (NUTS) sampler for very large models
 - The trained amortized network from RFC 001 as a proposal
-- Geo models with time-varying effects, lift tests and forecasting
+- Geo models with time-varying effects, reach and frequency, and lift tests that span regions
+- Product hierarchies on the NUTS backend
 - Mediated effects estimated in the model, not only declared in the graph
 - Published leaderboard entries for other open-source models on the same worlds
 
@@ -320,7 +369,7 @@ If you use Papilon in research, please cite:
 
 ```
 Curry, B. (2026). Papilon: Bayesian marketing mix modeling with gated importance
-sampling (Version 1.0.0). https://github.com/Bodhi8/papilon
+sampling (Version 1.1.0). https://github.com/Bodhi8/papilon
 ```
 
 Built by [Brian Curry](https://vector1.ai), Vector1 Research. Papilon, PyCausalSim and

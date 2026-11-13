@@ -28,3 +28,6 @@ gain to the plan. Test the channel at the top. The learning loop does this every
 
 In a known-truth test (`tests/test_v100.py`), one eight-week holdout of paid search
 measured with a 15% standard error narrowed the channel's 90% range by more than 30%.
+
+**Regional tests.** `GeoMMM(lift_tests=...)` takes the same columns plus the region; see
+[Geo models](geo.md).

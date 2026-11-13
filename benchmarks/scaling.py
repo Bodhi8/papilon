@@ -9,7 +9,7 @@ weeks), fits four models to each and grades them against the truth that generate
     gate, regional curves     a curve per region and channel, on the gate (small region counts only)
     NUTS, regional curves     a curve per region and channel, on the JAX backend
 
-    python benchmarks/scaling.py --regions 4 8 25 50 100 200 400
+    python benchmarks/scaling.py --regions 2 3 4 8 25 50 100 200 400
 
 Each fit is appended to ``scaling_results.jsonl`` as it finishes, so a long run can be
 split over several commands (fits already in the file are skipped); ``--from-results``
@@ -63,7 +63,7 @@ def one_fit(n_regions: int, method: str, seed: int) -> dict:
         seconds = time.perf_counter() - start
     g = m.gate_results[m.family.name()]
     est = m.get_roi(by_geo=True)
-    assert (est.region.to_numpy() == true.region.to_numpy()).all() and (est.channel.to_numpy() == true.channel.to_numpy()).all()
+    true = true.set_index(["region", "channel"]).loc[list(zip(est.region, est.channel))].reset_index()   # the model's order
     nat = m.get_roi()
     nat_true = np.array([truth["national_roas"][c] for c in MEDIA])
     inside = lambda lo, hi, v: float(((lo <= v) & (v <= hi)).mean())
@@ -99,7 +99,7 @@ def report(d: pd.DataFrame, info: dict) -> str:
     lines = ["# The scaling benchmark", "",
              "How do time and accuracy change with the number of regions, and where does the importance",
              "sampler (the gate) stop being enough? Every row is one fit to simulated regional data in which",
-             f"each region has its own carryover and saturation curve (`make_synthetic_geo_mmm(G, seed=4,",
+             "each region has its own carryover and saturation curve (`make_synthetic_geo_mmm(G, seed=4,",
              f"regional_curves={SPREAD})`: three channels, 156 weeks), graded against the truth that generated it.",
              "",
              "- **gate, shared curves**: the 1.0 model and sampler. One curve per channel for all regions;",
@@ -154,7 +154,7 @@ def report(d: pd.DataFrame, info: dict) -> str:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--regions", type=int, nargs="+", default=[4, 8, 25, 50, 100, 200, 400])
+    ap.add_argument("--regions", type=int, nargs="+", default=[2, 3, 4, 8, 25, 50, 100, 200, 400])
     ap.add_argument("--methods", nargs="+", default=list(METHODS), choices=list(METHODS))
     ap.add_argument("--gate-regional-max", type=int, default=8,
                     help="largest region count at which regional curves are also fitted with the gate")
