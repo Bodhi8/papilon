@@ -125,7 +125,7 @@ def report(d: pd.DataFrame, info: dict) -> str:
         for _, r in rows.iterrows():
             method = r.method if not r.draws > 1000 else f"{r.method}, {int(r.draws):,} + {int(r.draws):,} draws"
             if r.verdict.startswith("NUTS"):
-                check = (f"{'passed' if r.passed else 'FAILED'} (R-hat {r.rhat:.3f}, ESS {r.ess_bulk:.0f}, "
+                check = (f"{'passed' if r.passed else 'FAILED'} (R-hat {r.rhat:.4f}, ESS {r.ess_bulk:.0f}, "
                          f"{int(r.divergences)} divergent)")
             else:
                 check = f"{r.verdict}" + ("" if r.passed else " (not passed)")

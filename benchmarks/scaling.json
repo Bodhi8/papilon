@@ -598,6 +598,25 @@
       "regional_mroas_error": 0.0859774474,
       "regional_mroas_coverage": 0.9075,
       "draws": 1000
+    },
+    {
+      "regions": 200,
+      "method": "NUTS, regional curves",
+      "seed": 4,
+      "sampled_parameters": 1218,
+      "seconds": 2290.367393435,
+      "verdict": "NUTS_FAILED",
+      "passed": false,
+      "rhat": 1.0101757319,
+      "ess_bulk": 578.7774469265,
+      "divergences": 0,
+      "national_roas_error": 0.0354975857,
+      "national_roas_coverage": 1.0,
+      "regional_roas_error": 0.2961713749,
+      "regional_roas_coverage": 0.8933333333,
+      "regional_mroas_error": 0.0854601219,
+      "regional_mroas_coverage": 0.9116666667,
+      "draws": 2000
     }
   ]
 }

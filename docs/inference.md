@@ -73,7 +73,8 @@ model.fit(chains=4, warmup=1000, samples=1000, target_accept=0.9)   # the defaul
   Expect this in geo models with a curve per region beyond about 100 regions: in the
   scaling benchmark the smallest effective sample size at default settings was about 1,900
   at 4 regions, 420 at 100 and 270 at 200 and at 400, where the check failed with no divergences and
-  accurate estimates.
+  accurate estimates. Doubling the chains at 200 regions gave 579 effective draws and R-hat
+  1.0102, still a failed check by a hair, so plan for more than 2,000 draws per chain there.
 - Divergences: raise `target_accept` (0.95, then 0.99). Steps get smaller and the fit slower.
 - R-hat far above 1.01 that does not improve with length usually means separate modes.
   Fit with `sampler="gate"` if the model is small enough; otherwise look at which

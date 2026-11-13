@@ -136,7 +136,10 @@ message to upgrade.
   more: 11 minutes at 100 regions, 31 at 200 and 53 at 400 on two CPU cores. The spreads s mix
   slowest, and their effective sample size at default settings falls as regions are
   added (about 1,900 at 4 regions, 420 at 100, 270 at 200 and at 400), so the default chain length
-  stops passing the check between 100 and 200 regions. `benchmarks/SCALING.md` has the
+  stops passing the check between 100 and 200 regions. Chains twice as long at 200 regions
+  reach the effective-sample bar (579) and leave the worst R-hat at 1.0102. The worst
+  R-hat is a maximum over all sampled parameters, so with thousands of them it sits
+  further into the tail and the 1.01 bar is harder to clear. `benchmarks/SCALING.md` has the
   measurements.
 - The simulated regions used to grade this are kinder than real ones. A good score there
   is necessary, not sufficient.

@@ -189,8 +189,12 @@ What a curve per region buys is honest ranges, not much sharper point estimates:
 error of regional returns falls only from 0.31 to 0.29 at 100 regions. And at 200 and 400
 regions the default 1,000 warm-up and 1,000 kept draws per chain did not pass the
 convergence check (R-hat 1.013 and 1.021, 266 effective draws against the 400 required),
-although nothing diverged and accuracy matched the smaller runs; fits that large need
-longer chains (`fit(warmup=..., samples=...)`), and `passed` tells you when.
+although nothing diverged and accuracy matched the smaller runs. Longer chains
+(`fit(warmup=..., samples=...)`) help but were not enough at double length: at 200 regions,
+2,000 warm-up and 2,000 kept draws per chain (38 minutes) lifted the effective draws to
+579, above the bar, and brought R-hat to 1.0102, just over it, so the fit still reported
+failed, with the same estimates. Expect to need longer chains still at this size, and
+read `passed`.
 
 Shared curves also start to mislead nationally as regions are added: at 400 regions one
 of the three national 90% ranges held the truth, against all three with a curve per
@@ -255,7 +259,8 @@ known returns, and [anyone can enter one](benchmarks/SUBMITTING.md).
 
 - **Very large models take time, and past about 100 regions longer chains.** With a curve
   per region, NUTS on two CPU cores took 11 minutes at 100 regions, 31 at 200 and 53 at
-  400, and at 200 and 400 default settings no longer passed the convergence check
+  400, and at 200 and 400 default settings no longer passed the convergence check; at
+  200, chains twice as long still missed it by a hair
   ([scaling benchmark](benchmarks/SCALING.md)). No accelerator has been tested. The gate
   is not a substitute for these models: it loses calibration above about 40 sampled
   parameters.

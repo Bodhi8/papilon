@@ -20,36 +20,37 @@ accuracy columns at 4 and 8 regions (12 and 24 region-channel returns) are noise
 | Regions | Model and sampler | Sampled parameters | Time | Fit check | Regional return: error | 90% range holds it | Regional marginal return: error | 90% range holds it | National return: error |
 |---|---|---|---|---|---|---|---|---|---|
 | 2 | gate, shared curves | 12 | 5 s | ACCEPT | 0.29 | 83% | 0.08 | 83% | 0.28 |
-| 2 | NUTS, shared curves | 12 | 15 s | passed (R-hat 1.003, ESS 2935, 0 divergent) | 0.28 | 83% | 0.08 | 100% | 0.27 |
+| 2 | NUTS, shared curves | 12 | 15 s | passed (R-hat 1.0032, ESS 2935, 0 divergent) | 0.28 | 83% | 0.08 | 100% | 0.27 |
 | 2 | gate, regional curves | 30 | 39 s | SMC | 0.29 | 83% | 0.09 | 83% | 0.29 |
-| 2 | NUTS, regional curves | 30 | 23 s | passed (R-hat 1.004, ESS 1739, 0 divergent) | 0.34 | 83% | 0.08 | 83% | 0.33 |
+| 2 | NUTS, regional curves | 30 | 23 s | passed (R-hat 1.0037, ESS 1739, 0 divergent) | 0.34 | 83% | 0.08 | 83% | 0.33 |
 | 3 | gate, shared curves | 12 | 9 s | ACCEPT | 0.21 | 100% | 0.09 | 78% | 0.23 |
-| 3 | NUTS, shared curves | 12 | 13 s | passed (R-hat 1.002, ESS 3448, 0 divergent) | 0.20 | 100% | 0.09 | 89% | 0.22 |
+| 3 | NUTS, shared curves | 12 | 13 s | passed (R-hat 1.0015, ESS 3448, 0 divergent) | 0.20 | 100% | 0.09 | 89% | 0.22 |
 | 3 | gate, regional curves | 36 | 59 s | SMC | 0.24 | 78% | 0.08 | 89% | 0.23 |
-| 3 | NUTS, regional curves | 36 | 20 s | passed (R-hat 1.003, ESS 2136, 0 divergent) | 0.24 | 100% | 0.09 | 100% | 0.24 |
+| 3 | NUTS, regional curves | 36 | 20 s | passed (R-hat 1.0027, ESS 2136, 0 divergent) | 0.24 | 100% | 0.09 | 100% | 0.24 |
 | 4 | gate, shared curves | 12 | 9 s | ACCEPT | 0.24 | 92% | 0.09 | 92% | 0.23 |
-| 4 | NUTS, shared curves | 12 | 17 s | passed (R-hat 1.002, ESS 3290, 0 divergent) | 0.23 | 92% | 0.08 | 92% | 0.22 |
+| 4 | NUTS, shared curves | 12 | 17 s | passed (R-hat 1.0021, ESS 3290, 0 divergent) | 0.23 | 92% | 0.08 | 92% | 0.22 |
 | 4 | gate, regional curves | 42 | 81 s | SMC | 0.48 | 75% | 0.09 | 92% | 0.61 |
-| 4 | NUTS, regional curves | 42 | 32 s | passed (R-hat 1.006, ESS 1910, 0 divergent) | 0.21 | 100% | 0.08 | 100% | 0.21 |
+| 4 | NUTS, regional curves | 42 | 32 s | passed (R-hat 1.0058, ESS 1910, 0 divergent) | 0.21 | 100% | 0.08 | 100% | 0.21 |
 | 8 | gate, shared curves | 12 | 16 s | ACCEPT | 0.33 | 79% | 0.10 | 88% | 0.13 |
-| 8 | NUTS, shared curves | 12 | 19 s | passed (R-hat 1.001, ESS 3094, 0 divergent) | 0.33 | 83% | 0.10 | 88% | 0.13 |
+| 8 | NUTS, shared curves | 12 | 19 s | passed (R-hat 1.0010, ESS 3094, 0 divergent) | 0.33 | 83% | 0.10 | 88% | 0.13 |
 | 8 | gate, regional curves | 66 | 3 min | SMC | 0.67 | 54% | 0.12 | 75% | 0.36 |
-| 8 | NUTS, regional curves | 66 | 47 s | passed (R-hat 1.005, ESS 1392, 0 divergent) | 0.30 | 96% | 0.09 | 100% | 0.12 |
+| 8 | NUTS, regional curves | 66 | 47 s | passed (R-hat 1.0045, ESS 1392, 0 divergent) | 0.30 | 96% | 0.09 | 100% | 0.12 |
 | 25 | gate, shared curves | 12 | 53 s | ACCEPT | 0.31 | 69% | 0.09 | 83% | 0.14 |
-| 25 | NUTS, shared curves | 12 | 35 s | passed (R-hat 1.002, ESS 4401, 0 divergent) | 0.31 | 68% | 0.09 | 85% | 0.13 |
-| 25 | NUTS, regional curves | 168 | 3 min | passed (R-hat 1.005, ESS 927, 0 divergent) | 0.30 | 88% | 0.08 | 95% | 0.08 |
+| 25 | NUTS, shared curves | 12 | 35 s | passed (R-hat 1.0019, ESS 4401, 0 divergent) | 0.31 | 68% | 0.09 | 85% | 0.13 |
+| 25 | NUTS, regional curves | 168 | 3 min | passed (R-hat 1.0051, ESS 927, 0 divergent) | 0.30 | 88% | 0.08 | 95% | 0.08 |
 | 50 | gate, shared curves | 12 | 98 s | ACCEPT | 0.33 | 64% | 0.10 | 78% | 0.07 |
-| 50 | NUTS, shared curves | 12 | 59 s | passed (R-hat 1.002, ESS 5389, 0 divergent) | 0.33 | 64% | 0.10 | 79% | 0.07 |
-| 50 | NUTS, regional curves | 318 | 6 min | passed (R-hat 1.007, ESS 693, 0 divergent) | 0.29 | 89% | 0.08 | 91% | 0.04 |
+| 50 | NUTS, shared curves | 12 | 59 s | passed (R-hat 1.0022, ESS 5389, 0 divergent) | 0.33 | 64% | 0.10 | 79% | 0.07 |
+| 50 | NUTS, regional curves | 318 | 6 min | passed (R-hat 1.0073, ESS 693, 0 divergent) | 0.29 | 89% | 0.08 | 91% | 0.04 |
 | 100 | gate, shared curves | 12 | 4 min | ACCEPT | 0.31 | 62% | 0.10 | 82% | 0.08 |
-| 100 | NUTS, shared curves | 12 | 106 s | passed (R-hat 1.002, ESS 5841, 0 divergent) | 0.31 | 62% | 0.10 | 81% | 0.09 |
-| 100 | NUTS, regional curves | 618 | 11 min | passed (R-hat 1.007, ESS 422, 0 divergent) | 0.29 | 87% | 0.08 | 90% | 0.05 |
+| 100 | NUTS, shared curves | 12 | 106 s | passed (R-hat 1.0016, ESS 5841, 0 divergent) | 0.31 | 62% | 0.10 | 81% | 0.09 |
+| 100 | NUTS, regional curves | 618 | 11 min | passed (R-hat 1.0075, ESS 422, 0 divergent) | 0.29 | 87% | 0.08 | 90% | 0.05 |
 | 200 | gate, shared curves | 12 | 11 min | ACCEPT | 0.31 | 64% | 0.10 | 84% | 0.05 |
-| 200 | NUTS, shared curves | 12 | 4 min | passed (R-hat 1.004, ESS 6274, 0 divergent) | 0.32 | 64% | 0.10 | 84% | 0.04 |
-| 200 | NUTS, regional curves | 1,218 | 31 min | FAILED (R-hat 1.013, ESS 266, 0 divergent) | 0.30 | 90% | 0.09 | 91% | 0.04 |
+| 200 | NUTS, shared curves | 12 | 4 min | passed (R-hat 1.0040, ESS 6274, 0 divergent) | 0.32 | 64% | 0.10 | 84% | 0.04 |
+| 200 | NUTS, regional curves | 1,218 | 31 min | FAILED (R-hat 1.0125, ESS 266, 0 divergent) | 0.30 | 90% | 0.09 | 91% | 0.04 |
+| 200 | NUTS, regional curves, 2,000 + 2,000 draws | 1,218 | 38 min | FAILED (R-hat 1.0102, ESS 579, 0 divergent) | 0.30 | 89% | 0.09 | 91% | 0.04 |
 | 400 | gate, shared curves | 12 | 24 min | ACCEPT | 0.31 | 65% | 0.10 | 86% | 0.07 |
-| 400 | NUTS, shared curves | 12 | 8 min | passed (R-hat 1.003, ESS 6689, 0 divergent) | 0.31 | 65% | 0.10 | 86% | 0.07 |
-| 400 | NUTS, regional curves | 2,418 | 53 min | FAILED (R-hat 1.021, ESS 266, 0 divergent) | 0.29 | 91% | 0.09 | 91% | 0.03 |
+| 400 | NUTS, shared curves | 12 | 8 min | passed (R-hat 1.0027, ESS 6689, 0 divergent) | 0.31 | 65% | 0.10 | 86% | 0.07 |
+| 400 | NUTS, regional curves | 2,418 | 53 min | FAILED (R-hat 1.0207, ESS 266, 0 divergent) | 0.29 | 91% | 0.09 | 91% | 0.03 |
 
 ## Reading the columns
 

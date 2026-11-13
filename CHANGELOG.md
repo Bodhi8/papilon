@@ -78,7 +78,9 @@ gave in 1.0.0.
   shared curves; the error of regional returns improves by less than a tenth. At 200 and
   400 regions (1,218 and 2,418 parameters, 31 and 53 minutes) default settings failed the
   convergence check (R-hat 1.013 and 1.021, 266 effective draws against 400) with no
-  divergences and accuracy unchanged; fits that large need longer chains.
+  divergences and accuracy unchanged. At 200 regions, chains twice as long (38 minutes)
+  reached 579 effective draws and R-hat 1.0102, still just over the bar; fits that large
+  need longer chains than that.
 
 ### Not in this release
 - Bayes factors under NUTS: `compare_models` and `compare_carryover` always use the gate
