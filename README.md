@@ -160,7 +160,7 @@ integrated out, and reports into the same quality gate.
 
 ```python
 # pip install "papilon[jax]"
-df, truth = pp.make_synthetic_geo_mmm(n_geos=200, regional_curves=0.5)     # 200 regions, each with its own curves
+df, truth = pp.make_synthetic_geo_mmm(n_geos=100, regional_curves=0.5)     # 100 regions, each with its own curves
 model = pp.GeoMMM(df, "sales", ["search", "social", "video"], "date", geo_col="region",
                   regional_curves=True).fit()                               # sampler="auto" picks NUTS here
 
@@ -171,7 +171,25 @@ model.regional_spread()                           # how much curves differ acros
 model.forecast(model.future_frame(13))            # per region, with the national total
 ```
 
-@@README_SCALING@@
+Measured on simulated regions with known truth, on two CPU cores with no GPU
+([scaling benchmark](benchmarks/SCALING.md)):
+
+| Regions | Sampled parameters | NUTS time | NUTS fit check | Regional 90% ranges that hold the truth: shared curves → a curve per region |
+|---|---|---|---|---|
+| 8 | 66 | 47 s | passed | 79% → 96% |
+| 25 | 168 | 3 min | passed | 69% → 88% |
+| 50 | 318 | 6 min | passed | 64% → 89% |
+| 100 | 618 | 11 min | passed | 62% → 87% |
+| 200 | 1,218 | 31 min | failed on default settings | 64% → 90% |
+
+Three things to read from it. The gate cannot fit this model: given a curve per region at
+8 regions, 54% of its ranges hold the truth and its national error is three times NUTS's.
+What a curve per region buys is honest ranges, not much sharper point estimates: the
+error of regional returns falls only from 0.31 to 0.29 at 100 regions. And at 200 regions
+the default 1,000 warm-up and 1,000 kept draws per chain did not pass the convergence
+check (R-hat 1.013, 266 effective draws against the 400 required), although nothing
+diverged and accuracy matched the smaller runs; fits that large need longer chains
+(`fit(warmup=..., samples=...)`), and `passed` tells you when.
 
 `sampler="gate"` and `sampler="nuts"` force either sampler on any model; on the bundled
 four-channel brand they give the same returns, the gate in about a second and NUTS in
@@ -230,7 +248,16 @@ known returns, and [anyone can enter one](benchmarks/SUBMITTING.md).
 
 ## What Papilon does not do yet
 
-@@README_LIMITS@@
+- **Very large models take time, and past about 100 regions longer chains.** With a curve
+  per region, NUTS on two CPU cores took 11 minutes at 100 regions and 31 minutes at 200,
+  where default settings no longer passed the convergence check
+  ([scaling benchmark](benchmarks/SCALING.md)). No accelerator has been tested. The gate
+  is not a substitute for these models: it loses calibration above about 40 sampled
+  parameters.
+- **A curve per region buys calibrated ranges more than sharper estimates.** In the
+  benchmark it raised the share of regional ranges holding the truth from about 65% to
+  about 90%, and cut the error of regional returns by less than a tenth. For national
+  returns alone, shared curves are faster and about as accurate.
 - **In geo models:** time-varying effects, reach and frequency, organic channels, the
   backtest and the self-check, and lift tests measured as one number over several regions.
   Fit a national model on summed data for those.

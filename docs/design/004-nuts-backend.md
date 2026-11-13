@@ -71,9 +71,9 @@ not move between separated modes. Family comparison therefore stays on the gate.
 
 `sampler="auto"` (the default) uses NUTS when the model samples more than 40 parameters
 and the backend is installed. The threshold comes from the scaling benchmark
-(`benchmarks/SCALING.md`): fitted to the same data, the gate's SMC fallback is still
-close at 42 sampled parameters and has lost calibration at 66, while NUTS passes its
-checks at both. No national model or shared-curve geo model in the documentation or
+(`benchmarks/SCALING.md`): fitted to the same data, the gate's SMC fallback matches
+NUTS at 30 and 36 sampled parameters, has more than twice its error in regional returns
+at 42, and has lost calibration at 66, while NUTS passes its checks at all four. No national model or shared-curve geo model in the documentation or
 the test suite reaches 40, so their results are the 1.0 results, draw for draw.
 
 ## 4. Regional curves
@@ -132,7 +132,11 @@ message to upgrade.
 ## 8. Limits
 
 - Time-varying effects, reach and frequency and organic channels are still national only.
-- Regional curves multiply the parameters and the fit time by the number of regions;
-  `benchmarks/SCALING.md` gives measured times.
+- Regional curves multiply the parameters by the number of regions, and the fit time by
+  more: 11 minutes at 100 regions and 31 at 200 on two CPU cores. The spreads s mix
+  slowest, and their effective sample size at default settings falls as regions are
+  added (about 1,900 at 4 regions, 420 at 100, 270 at 200), so the default chain length
+  stops passing the check between 100 and 200 regions. `benchmarks/SCALING.md` has the
+  measurements.
 - The simulated regions used to grade this are kinder than real ones. A good score there
   is necessary, not sufficient.

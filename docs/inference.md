@@ -9,7 +9,7 @@ differ in how many parameters they can handle and in what they report.
 |---|---|---|
 | Method | importance sampling from a mixture over every posterior mode, with a quality gate and a tempered SMC fallback | the No-U-Turn sampler, a gradient-based Markov chain |
 | Install | `pip install papilon` (NumPy and SciPy) | `pip install "papilon[jax]"` (adds JAX and NumPyro) |
-| Good for | up to about 40 sampled parameters: national models, geo models with shared curves | hundreds to thousands: geo models with a curve per region |
+| Good for | up to about 40 sampled parameters: national models, geo models with shared curves | hundreds of sampled parameters (measured to about 1,200): geo models with a curve per region |
 | Reports | effective sample share, Pareto k, modes found, and the marginal likelihood | R-hat, effective sample size, divergent transitions |
 | Bayes factors (`compare_models`) | yes | no |
 | Several separate modes | yes, each gets a mixture component | no: chains stay in the mode they start near, and R-hat shows it |
@@ -70,6 +70,10 @@ model.fit(chains=4, warmup=1000, samples=1000, target_accept=0.9)   # the defaul
 ```
 
 - `NUTS_FAILED` on R-hat or effective sample size: run longer (`warmup=2000, samples=2000`).
+  Expect this in geo models with a curve per region beyond about 100 regions: in the
+  scaling benchmark the smallest effective sample size at default settings was about 1,900
+  at 4 regions, 420 at 100 and 270 at 200, where the check failed with no divergences and
+  accurate estimates.
 - Divergences: raise `target_accept` (0.95, then 0.99). Steps get smaller and the fit slower.
 - R-hat far above 1.01 that does not improve with length usually means separate modes.
   Fit with `sampler="gate"` if the model is small enough; otherwise look at which

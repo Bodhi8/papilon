@@ -37,7 +37,7 @@ gave in 1.0.0.
 
 ### Added: benchmarks and documentation
 - `benchmarks/scaling.py` and [SCALING.md](benchmarks/SCALING.md): time and accuracy
-  against known truth from 4 to @@MAXG@@ regions, gate against NUTS.
+  against known truth from 2 to 200 regions, gate against NUTS.
 - A NUTS entry on the leaderboard.
 - An inference guide (`docs/inference.md`) and RFC 004 (`docs/design/004-nuts-backend.md`).
 - CI job `jax-backend`: the extra on Linux, Windows and macOS. The main test job installs
@@ -46,7 +46,10 @@ gave in 1.0.0.
 ### Changed
 - The default `sampler="auto"` sends a model with more than 40 sampled parameters to NUTS
   when the backend is installed. Benchmark result behind the threshold
-  ([SCALING.md](benchmarks/SCALING.md)): @@THRESHOLD@@
+  ([SCALING.md](benchmarks/SCALING.md)): on the same simulated
+  regions the gate's fallback matches NUTS at 36 sampled parameters, has more than twice
+  its error in regional returns at 42, and at 66 its 90% ranges hold the truth 54% of the
+  time against 96%.
   Smaller models, and every install without the backend, fit as in 1.0.0.
 - Saved models are written in format version 2 (sampler, diagnostics, regional draws, geo
   lift tests). 1.1 reads files written by 1.0; 1.0 refuses 1.1 files with a message to
@@ -64,7 +67,13 @@ gave in 1.0.0.
   90% range holds the truth 97% of the time (gate 98%) and plans capture 48% of the best
   gain (gate 48%); on hard brands 69% and 28% (gate 69% and 29%).
 - Loop benchmark, rerun: reproduces the 1.0.0 results to ten decimal places.
-- Scaling: @@SCALING@@
+- Scaling: with a curve per region, NUTS passed its checks from 2 to 100 regions (618
+  sampled parameters, 11 minutes on two CPU cores, no GPU). From 25 to 200 regions its
+  regional 90% ranges hold the truth 87% to 90% of the time, against 62% to 69% with
+  shared curves; the error of regional returns improves by less than a tenth. At 200
+  regions (1,218 parameters, 31 minutes) default settings failed the convergence check
+  narrowly (R-hat 1.013, 266 effective draws against 400) with accuracy unchanged; fits
+  that large need longer chains.
 
 ### Not in this release
 - Bayes factors under NUTS: `compare_models` and `compare_carryover` always use the gate

@@ -50,7 +50,7 @@ def truth_table(df: pd.DataFrame, truth: dict, l_max: int = 8) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def one_fit(n_regions: int, method: str, seed: int) -> dict:
+def one_fit(n_regions: int, method: str, seed: int, draws: int = 1000) -> dict:
     import papilon as pp
     sampler, regional = METHODS[method]
     df, truth = pp.make_synthetic_geo_mmm(n_geos=n_regions, seed=seed, regional_curves=SPREAD)
@@ -59,7 +59,7 @@ def one_fit(n_regions: int, method: str, seed: int) -> dict:
         warnings.simplefilter("ignore")
         start = time.perf_counter()
         m = pp.GeoMMM(df, "sales", MEDIA, "date", "region", seed=seed, sampler=sampler, regional_curves=regional)
-        m.fit(n_starts=2)
+        m.fit(n_starts=2, warmup=draws, samples=draws)        # the gate ignores warmup and samples
         seconds = time.perf_counter() - start
     g = m.gate_results[m.family.name()]
     est = m.get_roi(by_geo=True)
@@ -68,7 +68,8 @@ def one_fit(n_regions: int, method: str, seed: int) -> dict:
     nat_true = np.array([truth["national_roas"][c] for c in MEDIA])
     inside = lambda lo, hi, v: float(((lo <= v) & (v <= hi)).mean())
     fin = lambda v: None if not np.isfinite(v) else float(v)
-    return {"regions": n_regions, "method": method, "seed": seed, "sampled_parameters": int(m._dim(m._fam)),
+    return {"regions": n_regions, "method": method, "draws": int(draws) if sampler == "nuts" else None, "seed": seed,
+            "sampled_parameters": int(m._dim(m._fam)),
             "seconds": float(seconds), "verdict": g.verdict, "passed": bool(g.passed), "rhat": fin(g.rhat),
             "ess_bulk": fin(g.ess_bulk), "divergences": int(g.divergences),
             "national_roas_error": float(np.abs(nat.roas_mean.to_numpy() - nat_true).mean()),
@@ -110,7 +111,8 @@ def report(d: pd.DataFrame, info: dict) -> str:
              "",
              f"Machine: {info['cpus']} CPU cores, {info['platform']}, Python {info['python']}, Papilon {info['papilon']}, "
              f"JAX {info['jax']}, NumPyro {info['numpyro']}. No GPU. Default sampler settings (gate: 4,000 draws, two starts;",
-             "NUTS: four chains, 1,000 warm-up and 1,000 kept draws each). Seconds are wall-clock for one fit, compilation",
+             "NUTS: four chains, 1,000 warm-up and 1,000 kept draws each) unless the row says otherwise. Seconds are wall-clock",
+             "for one fit, compilation",
              "included, with nothing else running. One simulated dataset per region count, so small differences in the",
              "accuracy columns at 4 and 8 regions (12 and 24 region-channel returns) are noise.",
              "",
@@ -118,11 +120,10 @@ def report(d: pd.DataFrame, info: dict) -> str:
              "| Regional marginal return: error | 90% range holds it | National return: error |",
              "|---|---|---|---|---|---|---|---|---|---|"]
     for n in sorted(d.regions.unique()):
-        for method in METHODS:
-            r = d[(d.regions == n) & (d.method == method)]
-            if r.empty:
-                continue
-            r = r.iloc[0]
+        rows = d[d.regions == n]
+        rows = rows.assign(order=rows.method.map(list(METHODS).index)).sort_values(["order", "draws"])
+        for _, r in rows.iterrows():
+            method = r.method if not r.draws > 1000 else f"{r.method}, {int(r.draws):,} + {int(r.draws):,} draws"
             if r.verdict.startswith("NUTS"):
                 check = (f"{'passed' if r.passed else 'FAILED'} (R-hat {r.rhat:.3f}, ESS {r.ess_bulk:.0f}, "
                          f"{int(r.divergences)} divergent)")
@@ -159,22 +160,29 @@ def main():
     ap.add_argument("--gate-regional-max", type=int, default=8,
                     help="largest region count at which regional curves are also fitted with the gate")
     ap.add_argument("--seed", type=int, default=4)
+    ap.add_argument("--draws", type=int, default=1000,
+                    help="NUTS warm-up and kept draws per chain (default 1000, the library default); a longer run is "
+                         "recorded as its own row")
     ap.add_argument("--from-results", action="store_true", help="rebuild SCALING.md from scaling_results.jsonl")
     a = ap.parse_args()
     res = HERE / "scaling_results.jsonl"
     done = set()
     if res.exists():
-        done = {(r["regions"], r["method"]) for r in map(json.loads, res.read_text().splitlines()) if r}
+        done = {(r["regions"], r["method"], r.get("draws") or 1000)
+                for r in map(json.loads, res.read_text().splitlines()) if r}
     if not a.from_results:
         for n in a.regions:
             for method in a.methods:
-                if (n, method) in done or (method == "gate, regional curves" and n > a.gate_regional_max):
+                if a.draws != 1000 and METHODS[method][0] != "nuts":
                     continue
-                r = one_fit(n, method, a.seed)
+                if (n, method, a.draws) in done or (method == "gate, regional curves" and n > a.gate_regional_max):
+                    continue
+                r = one_fit(n, method, a.seed, a.draws)
                 with open(res, "a") as f:
                     f.write(json.dumps(r) + "\n")
                 print(json.dumps(r), flush=True)
     d = pd.read_json(res, lines=True)
+    d["draws"] = (d["draws"] if "draws" in d else pd.Series(np.nan, index=d.index)).fillna(1000).astype(int)
     info = machine()
     (HERE / "scaling.json").write_text(json.dumps({"machine": info, "spread": SPREAD,
                                                    "fits": json.loads(d.to_json(orient="records"))}, indent=2))

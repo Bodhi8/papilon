@@ -12,7 +12,8 @@ regional_curves=0.5)`: three channels, 156 weeks), graded against the truth that
 - **NUTS, regional curves**: `regional_curves=True` on the JAX backend, the model 1.1 adds.
 
 Machine: 2 CPU cores, Linux-6.18.44-fc-v445-x86_64-with-glibc2.39, Python 3.13.18, Papilon 1.1.0, JAX 0.12.0.1, NumPyro 0.22.0. No GPU. Default sampler settings (gate: 4,000 draws, two starts;
-NUTS: four chains, 1,000 warm-up and 1,000 kept draws each). Seconds are wall-clock for one fit, compilation
+NUTS: four chains, 1,000 warm-up and 1,000 kept draws each) unless the row says otherwise. Seconds are wall-clock
+for one fit, compilation
 included, with nothing else running. One simulated dataset per region count, so small differences in the
 accuracy columns at 4 and 8 regions (12 and 24 region-channel returns) are noise.
 

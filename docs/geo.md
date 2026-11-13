@@ -76,7 +76,7 @@ When to use it: when regions differ in how fast a channel saturates (large and s
 markets bought at different weights) and you plan to move money between regions, which
 rests on each region's marginal return. For national returns, shared curves are faster
 and about as accurate. The [scaling benchmark](https://github.com/Bodhi8/papilon/blob/main/benchmarks/SCALING.md)
-measures both models, with both samplers, from 4 to 400 regions.
+measures both models, with both samplers, from 2 to 200 regions.
 
 Bayes-factor comparison of families (`compare_models`) uses shared curves: choose the
 family first, then fit the winner with regional curves.
