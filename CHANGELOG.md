@@ -37,7 +37,7 @@ gave in 1.0.0.
 
 ### Added: benchmarks and documentation
 - `benchmarks/scaling.py` and [SCALING.md](benchmarks/SCALING.md): time and accuracy
-  against known truth from 2 to 200 regions, gate against NUTS.
+  against known truth from 2 to 400 regions, gate against NUTS.
 - A NUTS entry on the leaderboard.
 - An inference guide (`docs/inference.md`) and RFC 004 (`docs/design/004-nuts-backend.md`).
 - CI job `jax-backend`: the extra on Linux, Windows and macOS. The main test job installs
@@ -60,20 +60,25 @@ gave in 1.0.0.
 ### Benchmarks
 - Default fits: 21 seeded outputs (returns, gate statistics, plans, forecasts, the SMC
   fallback, family comparison, geo returns and pooling) recorded on 1.0.0 are reproduced
-  bit for bit by 1.1.0 with the same library versions; `tests/test_v110.py` keeps a subset
-  as a regression test, and loads model files saved by 1.0.0.
+  bit for bit by 1.1.0 on the same machine with the same library versions (checked on
+  Python 3.12 and 3.13). Seeded fits are not reproducible across processors and operating
+  systems: on other machines returns move by a few percent, inside their ranges. That is
+  a property of the mode search and importance draws, which 1.1 does not change. The
+  regression test in `tests/test_v110.py` therefore checks that the default sampler gives
+  exactly the gate's draws and that results stay within a quarter of the recorded 90%
+  ranges, and it loads model files saved by 1.0.0.
 - Leaderboard, rerun: the default entries score exactly as in 1.0.0. The NUTS sampler,
   with the family fixed, scores within sampling noise of the gate: on standard brands the
   90% range holds the truth 97% of the time (gate 98%) and plans capture 48% of the best
   gain (gate 48%); on hard brands 69% and 28% (gate 69% and 29%).
 - Loop benchmark, rerun: reproduces the 1.0.0 results to ten decimal places.
 - Scaling: with a curve per region, NUTS passed its checks from 2 to 100 regions (618
-  sampled parameters, 11 minutes on two CPU cores, no GPU). From 25 to 200 regions its
-  regional 90% ranges hold the truth 87% to 90% of the time, against 62% to 69% with
-  shared curves; the error of regional returns improves by less than a tenth. At 200
-  regions (1,218 parameters, 31 minutes) default settings failed the convergence check
-  narrowly (R-hat 1.013, 266 effective draws against 400) with accuracy unchanged; fits
-  that large need longer chains.
+  sampled parameters, 11 minutes on two CPU cores, no GPU). From 25 to 400 regions its
+  regional 90% ranges hold the truth 87% to 91% of the time, against 62% to 69% with
+  shared curves; the error of regional returns improves by less than a tenth. At 200 and
+  400 regions (1,218 and 2,418 parameters, 31 and 53 minutes) default settings failed the
+  convergence check (R-hat 1.013 and 1.021, 266 effective draws against 400) with no
+  divergences and accuracy unchanged; fits that large need longer chains.
 
 ### Not in this release
 - Bayes factors under NUTS: `compare_models` and `compare_carryover` always use the gate

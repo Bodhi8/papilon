@@ -133,9 +133,9 @@ message to upgrade.
 
 - Time-varying effects, reach and frequency and organic channels are still national only.
 - Regional curves multiply the parameters by the number of regions, and the fit time by
-  more: 11 minutes at 100 regions and 31 at 200 on two CPU cores. The spreads s mix
+  more: 11 minutes at 100 regions, 31 at 200 and 53 at 400 on two CPU cores. The spreads s mix
   slowest, and their effective sample size at default settings falls as regions are
-  added (about 1,900 at 4 regions, 420 at 100, 270 at 200), so the default chain length
+  added (about 1,900 at 4 regions, 420 at 100, 270 at 200 and at 400), so the default chain length
   stops passing the check between 100 and 200 regions. `benchmarks/SCALING.md` has the
   measurements.
 - The simulated regions used to grade this are kinder than real ones. A good score there

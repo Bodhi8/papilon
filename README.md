@@ -181,15 +181,20 @@ Measured on simulated regions with known truth, on two CPU cores with no GPU
 | 50 | 318 | 6 min | passed | 64% → 89% |
 | 100 | 618 | 11 min | passed | 62% → 87% |
 | 200 | 1,218 | 31 min | failed on default settings | 64% → 90% |
+| 400 | 2,418 | 53 min | failed on default settings | 65% → 91% |
 
 Three things to read from it. The gate cannot fit this model: given a curve per region at
 8 regions, 54% of its ranges hold the truth and its national error is three times NUTS's.
 What a curve per region buys is honest ranges, not much sharper point estimates: the
-error of regional returns falls only from 0.31 to 0.29 at 100 regions. And at 200 regions
-the default 1,000 warm-up and 1,000 kept draws per chain did not pass the convergence
-check (R-hat 1.013, 266 effective draws against the 400 required), although nothing
-diverged and accuracy matched the smaller runs; fits that large need longer chains
-(`fit(warmup=..., samples=...)`), and `passed` tells you when.
+error of regional returns falls only from 0.31 to 0.29 at 100 regions. And at 200 and 400
+regions the default 1,000 warm-up and 1,000 kept draws per chain did not pass the
+convergence check (R-hat 1.013 and 1.021, 266 effective draws against the 400 required),
+although nothing diverged and accuracy matched the smaller runs; fits that large need
+longer chains (`fit(warmup=..., samples=...)`), and `passed` tells you when.
+
+Shared curves also start to mislead nationally as regions are added: at 400 regions one
+of the three national 90% ranges held the truth, against all three with a curve per
+region.
 
 `sampler="gate"` and `sampler="nuts"` force either sampler on any model; on the bundled
 four-channel brand they give the same returns, the gate in about a second and NUTS in
@@ -249,8 +254,8 @@ known returns, and [anyone can enter one](benchmarks/SUBMITTING.md).
 ## What Papilon does not do yet
 
 - **Very large models take time, and past about 100 regions longer chains.** With a curve
-  per region, NUTS on two CPU cores took 11 minutes at 100 regions and 31 minutes at 200,
-  where default settings no longer passed the convergence check
+  per region, NUTS on two CPU cores took 11 minutes at 100 regions, 31 at 200 and 53 at
+  400, and at 200 and 400 default settings no longer passed the convergence check
   ([scaling benchmark](benchmarks/SCALING.md)). No accelerator has been tested. The gate
   is not a substitute for these models: it loses calibration above about 40 sampled
   parameters.
