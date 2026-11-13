@@ -11,12 +11,12 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-"""Bayesian marketing mix model with gated importance sampling (Papilon RFC 001).
+"""Bayesian marketing mix model with gated importance sampling.
 
-Inference follows the path in ``papilon-amortized-inference-design.md``:
+Inference follows four steps:
 
-1. a proposal distribution over the media parameters (here a Laplace fit at the
-   posterior mode, standing in for the amortized network described in the RFC),
+1. a proposal distribution over the media parameters, built from the posterior
+   modes,
 2. importance sampling against the exact posterior,
 3. an effective-sample-size gate that accepts the proposal, refines it from the
    weighted draws, or escalates,

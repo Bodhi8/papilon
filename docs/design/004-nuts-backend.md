@@ -12,7 +12,7 @@ how 1.1 samples them.
 
 ## 1. One posterior, two implementations
 
-The target is unchanged: the collapsed posterior of RFC 001 and RFC 003, over the
+The target is unchanged: the collapsed posterior of the national model and of RFC 003, over the
 unconstrained curve parameters z, with baselines and noise (and in geo models the
 regional effects) integrated out in closed form.
 

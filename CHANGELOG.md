@@ -239,7 +239,7 @@ macOS, and fitted models can be saved, tracked, monitored and reported.
 
 ### Added
 - `papilon.MMM`: a Bayesian marketing mix model fit by gated importance sampling,
-  following the inference path in RFC 001 (`papilon-amortized-inference-design.md`).
+  with an effective-sample-size gate.
   - Geometric and delayed adstock, Hill saturation, positive channel effects.
   - Baseline, trend, yearly seasonality and controls integrated out in closed form.
   - An effective-sample-size gate that accepts, refines or escalates the proposal.

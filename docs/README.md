@@ -12,7 +12,7 @@ added in 0.5; the [README](../README.md) covers the model itself.
 | [The marketing vocabulary](vocabulary/README.md) | The terms the knowledge graph uses, for sharing graphs between tools |
 | [The leaderboard](../benchmarks/LEADERBOARD.md) | How Papilon and a reference baseline score against known truth, and [how to enter](../benchmarks/SUBMITTING.md) |
 | [Inference: the gate and NUTS](inference.md) | Which sampler runs, what it reports, and how to read a failed fit |
-| [RFC 001](../papilon-amortized-inference-design.md), [RFC 002](design/002-checkable-mmm.md), [RFC 003](design/003-learning-loop-and-geo.md), [RFC 004](design/004-nuts-backend.md) | Design records for the inference method, the checks, the learning loop and the NUTS backend |
+| [RFC 002](design/002-checkable-mmm.md), [RFC 004](design/004-nuts-backend.md) | Design records for the checks and the NUTS backend |
 
 Papilon and PyCausalSim are research software from Vector1 Research, free to use under
 the Apache License 2.0. If they are useful in your work, please cite them

@@ -324,12 +324,10 @@ sampling noise of them (standard brands: 97% of ranges hold the truth and plans 
 
 ## How the model is fit
 
-`pp.MMM` follows the inference path in
-[RFC 001, amortized structural inference](papilon-amortized-inference-design.md):
+`pp.MMM` is fit in four steps:
 
 1. **Proposal.** A distribution over the media parameters (carryover, saturation,
-   effect size). Since 0.3.0, a Laplace fit at the posterior mode stands in for the
-   trained amortized network the RFC describes.
+   effect size), built from every posterior mode the search finds.
 2. **Importance sampling** against the exact posterior. Baseline, trend, seasonality,
    controls and noise are integrated out in closed form, so sampling covers only the
    media parameters.
@@ -340,13 +338,12 @@ sampling noise of them (standard brands: 97% of ranges hold the truth and plans 
    likelihood, so `compare_carryover()` can choose between geometric and delayed
    adstock per channel.
 
-5. **NUTS for large models (1.1).** Above about 40 sampled parameters, with the optional
-   JAX backend installed, the same posterior is sampled with the No-U-Turn sampler, and
-   the gate reads R-hat, effective sample size and divergences in place of the
-   importance-sampling checks ([RFC 004](docs/design/004-nuts-backend.md)).
+Channel effects are constrained to be positive.
 
-Channel effects are constrained to be positive. The single-channel prototypes behind
-this design, with their results, are in [`prototypes/`](prototypes/).
+**Large models (1.1).** Above about 40 sampled parameters, with the optional JAX backend
+installed, the same posterior is sampled with the No-U-Turn sampler instead, and the gate
+reads R-hat, effective sample size and divergences in place of the importance-sampling
+checks. See [inference](docs/inference.md).
 
 ## Other tools (from 0.2.0)
 
@@ -380,7 +377,6 @@ pytest -m jax                      # the NUTS backend, about two minutes
 
 These are planned and **not in the released package**:
 
-- The trained amortized network from RFC 001 as a proposal
 - Geo models with time-varying effects, reach and frequency, and lift tests that span regions
 - Product hierarchies on the NUTS backend
 - Mediated effects estimated in the model, not only declared in the graph
