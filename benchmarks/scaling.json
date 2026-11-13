@@ -26,8 +26,7 @@
       "regional_roas_error": 0.2403482653,
       "regional_roas_coverage": 0.9166666667,
       "regional_mroas_error": 0.0851503767,
-      "regional_mroas_coverage": 0.9166666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.9166666667
     },
     {
       "regions": 4,
@@ -45,8 +44,7 @@
       "regional_roas_error": 0.2325928313,
       "regional_roas_coverage": 0.9166666667,
       "regional_mroas_error": 0.0849510226,
-      "regional_mroas_coverage": 0.9166666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.9166666667
     },
     {
       "regions": 4,
@@ -64,8 +62,7 @@
       "regional_roas_error": 0.4800861746,
       "regional_roas_coverage": 0.75,
       "regional_mroas_error": 0.0907723804,
-      "regional_mroas_coverage": 0.9166666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.9166666667
     },
     {
       "regions": 4,
@@ -83,8 +80,7 @@
       "regional_roas_error": 0.2099480665,
       "regional_roas_coverage": 1.0,
       "regional_mroas_error": 0.0803109555,
-      "regional_mroas_coverage": 1.0,
-      "draws": 1000
+      "regional_mroas_coverage": 1.0
     },
     {
       "regions": 8,
@@ -102,8 +98,7 @@
       "regional_roas_error": 0.3338884752,
       "regional_roas_coverage": 0.7916666667,
       "regional_mroas_error": 0.1009594548,
-      "regional_mroas_coverage": 0.875,
-      "draws": 1000
+      "regional_mroas_coverage": 0.875
     },
     {
       "regions": 8,
@@ -121,8 +116,7 @@
       "regional_roas_error": 0.3304024267,
       "regional_roas_coverage": 0.8333333333,
       "regional_mroas_error": 0.1002271749,
-      "regional_mroas_coverage": 0.875,
-      "draws": 1000
+      "regional_mroas_coverage": 0.875
     },
     {
       "regions": 8,
@@ -140,8 +134,7 @@
       "regional_roas_error": 0.6706453998,
       "regional_roas_coverage": 0.5416666667,
       "regional_mroas_error": 0.1197926328,
-      "regional_mroas_coverage": 0.75,
-      "draws": 1000
+      "regional_mroas_coverage": 0.75
     },
     {
       "regions": 8,
@@ -159,8 +152,7 @@
       "regional_roas_error": 0.3042588358,
       "regional_roas_coverage": 0.9583333333,
       "regional_mroas_error": 0.0876838405,
-      "regional_mroas_coverage": 1.0,
-      "draws": 1000
+      "regional_mroas_coverage": 1.0
     },
     {
       "regions": 2,
@@ -178,8 +170,7 @@
       "regional_roas_error": 0.2870254021,
       "regional_roas_coverage": 0.8333333333,
       "regional_mroas_error": 0.0755121203,
-      "regional_mroas_coverage": 0.8333333333,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8333333333
     },
     {
       "regions": 2,
@@ -197,8 +188,7 @@
       "regional_roas_error": 0.2784723503,
       "regional_roas_coverage": 0.8333333333,
       "regional_mroas_error": 0.0759352532,
-      "regional_mroas_coverage": 1.0,
-      "draws": 1000
+      "regional_mroas_coverage": 1.0
     },
     {
       "regions": 2,
@@ -216,8 +206,7 @@
       "regional_roas_error": 0.293425423,
       "regional_roas_coverage": 0.8333333333,
       "regional_mroas_error": 0.0858010779,
-      "regional_mroas_coverage": 0.8333333333,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8333333333
     },
     {
       "regions": 2,
@@ -235,8 +224,7 @@
       "regional_roas_error": 0.3355185607,
       "regional_roas_coverage": 0.8333333333,
       "regional_mroas_error": 0.0829206985,
-      "regional_mroas_coverage": 0.8333333333,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8333333333
     },
     {
       "regions": 3,
@@ -254,8 +242,7 @@
       "regional_roas_error": 0.2055053268,
       "regional_roas_coverage": 1.0,
       "regional_mroas_error": 0.0910969888,
-      "regional_mroas_coverage": 0.7777777778,
-      "draws": 1000
+      "regional_mroas_coverage": 0.7777777778
     },
     {
       "regions": 3,
@@ -273,8 +260,7 @@
       "regional_roas_error": 0.1997376594,
       "regional_roas_coverage": 1.0,
       "regional_mroas_error": 0.0904199756,
-      "regional_mroas_coverage": 0.8888888889,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8888888889
     },
     {
       "regions": 3,
@@ -292,8 +278,7 @@
       "regional_roas_error": 0.2353202927,
       "regional_roas_coverage": 0.7777777778,
       "regional_mroas_error": 0.0791019044,
-      "regional_mroas_coverage": 0.8888888889,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8888888889
     },
     {
       "regions": 3,
@@ -311,8 +296,7 @@
       "regional_roas_error": 0.2395343725,
       "regional_roas_coverage": 1.0,
       "regional_mroas_error": 0.0907508347,
-      "regional_mroas_coverage": 1.0,
-      "draws": 1000
+      "regional_mroas_coverage": 1.0
     },
     {
       "regions": 25,
@@ -330,8 +314,7 @@
       "regional_roas_error": 0.3115903694,
       "regional_roas_coverage": 0.6933333333,
       "regional_mroas_error": 0.0873337017,
-      "regional_mroas_coverage": 0.8266666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8266666667
     },
     {
       "regions": 25,
@@ -349,8 +332,7 @@
       "regional_roas_error": 0.307530219,
       "regional_roas_coverage": 0.68,
       "regional_mroas_error": 0.0866472947,
-      "regional_mroas_coverage": 0.8533333333,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8533333333
     },
     {
       "regions": 25,
@@ -368,8 +350,7 @@
       "regional_roas_error": 0.2993415896,
       "regional_roas_coverage": 0.88,
       "regional_mroas_error": 0.0798905699,
-      "regional_mroas_coverage": 0.9466666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.9466666667
     },
     {
       "regions": 50,
@@ -387,8 +368,7 @@
       "regional_roas_error": 0.3258783557,
       "regional_roas_coverage": 0.64,
       "regional_mroas_error": 0.102074233,
-      "regional_mroas_coverage": 0.78,
-      "draws": 1000
+      "regional_mroas_coverage": 0.78
     },
     {
       "regions": 50,
@@ -406,8 +386,7 @@
       "regional_roas_error": 0.3252191379,
       "regional_roas_coverage": 0.64,
       "regional_mroas_error": 0.1023431251,
-      "regional_mroas_coverage": 0.7866666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.7866666667
     },
     {
       "regions": 50,
@@ -425,8 +404,7 @@
       "regional_roas_error": 0.2909956553,
       "regional_roas_coverage": 0.8933333333,
       "regional_mroas_error": 0.0842698051,
-      "regional_mroas_coverage": 0.9133333333,
-      "draws": 1000
+      "regional_mroas_coverage": 0.9133333333
     },
     {
       "regions": 100,
@@ -444,8 +422,7 @@
       "regional_roas_error": 0.3135782064,
       "regional_roas_coverage": 0.6166666667,
       "regional_mroas_error": 0.0986207175,
-      "regional_mroas_coverage": 0.8166666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8166666667
     },
     {
       "regions": 100,
@@ -463,8 +440,7 @@
       "regional_roas_error": 0.3135751125,
       "regional_roas_coverage": 0.6166666667,
       "regional_mroas_error": 0.0986563752,
-      "regional_mroas_coverage": 0.8133333333,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8133333333
     },
     {
       "regions": 100,
@@ -482,8 +458,7 @@
       "regional_roas_error": 0.2935898825,
       "regional_roas_coverage": 0.87,
       "regional_mroas_error": 0.0843342314,
-      "regional_mroas_coverage": 0.8966666667,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8966666667
     },
     {
       "regions": 200,
@@ -501,8 +476,7 @@
       "regional_roas_error": 0.3149575655,
       "regional_roas_coverage": 0.645,
       "regional_mroas_error": 0.0973834907,
-      "regional_mroas_coverage": 0.845,
-      "draws": 1000
+      "regional_mroas_coverage": 0.845
     },
     {
       "regions": 200,
@@ -520,8 +494,7 @@
       "regional_roas_error": 0.3150052017,
       "regional_roas_coverage": 0.635,
       "regional_mroas_error": 0.0972982177,
-      "regional_mroas_coverage": 0.8433333333,
-      "draws": 1000
+      "regional_mroas_coverage": 0.8433333333
     },
     {
       "regions": 200,
@@ -539,8 +512,43 @@
       "regional_roas_error": 0.2957923189,
       "regional_roas_coverage": 0.895,
       "regional_mroas_error": 0.0854594587,
-      "regional_mroas_coverage": 0.91,
-      "draws": 1000
+      "regional_mroas_coverage": 0.91
+    },
+    {
+      "regions": 400,
+      "method": "gate, shared curves",
+      "seed": 4,
+      "sampled_parameters": 12,
+      "seconds": 1457.978813828,
+      "verdict": "ACCEPT",
+      "passed": true,
+      "rhat": null,
+      "ess_bulk": null,
+      "divergences": 0,
+      "national_roas_error": 0.0712534264,
+      "national_roas_coverage": 0.3333333333,
+      "regional_roas_error": 0.3090249387,
+      "regional_roas_coverage": 0.6483333333,
+      "regional_mroas_error": 0.0969553392,
+      "regional_mroas_coverage": 0.8608333333
+    },
+    {
+      "regions": 400,
+      "method": "NUTS, shared curves",
+      "seed": 4,
+      "sampled_parameters": 12,
+      "seconds": 481.427221734,
+      "verdict": "NUTS",
+      "passed": true,
+      "rhat": 1.0027147753,
+      "ess_bulk": 6689.1576393905,
+      "divergences": 0,
+      "national_roas_error": 0.0706999999,
+      "national_roas_coverage": 0.3333333333,
+      "regional_roas_error": 0.3090100796,
+      "regional_roas_coverage": 0.6516666667,
+      "regional_mroas_error": 0.0967667522,
+      "regional_mroas_coverage": 0.86
     }
   ]
 }
