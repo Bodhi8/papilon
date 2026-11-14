@@ -1,10 +1,16 @@
 name: benchmark candidate
 
 # Grades a candidate leaderboard entry (an adapter for another library that is still being
-# verified). Started by hand only. Scores are kept out of the job log and uploaded as an
-# artifact, so an unverified result is never shown on the run page. Nothing is committed.
+# verified). Scores are kept out of the job log and uploaded as an artifact, so an unverified
+# result is never shown on the run page. Nothing is committed.
+#
+# Two ways to start it:
+#   - by hand from the Actions tab (available once this file is on the default branch);
+#   - by changing benchmarks/candidates/RUN on a branch, which runs the candidate named there.
 
 on:
+  push:
+    paths: ["benchmarks/candidates/RUN"]
   workflow_dispatch:
     inputs:
       candidate:
@@ -39,9 +45,15 @@ jobs:
         env:
           MPLBACKEND: Agg
           OMP_NUM_THREADS: "1"
-        run: python benchmarks/run_candidate.py "${{ inputs.candidate }}" --worlds "${{ inputs.worlds }}" --jobs 3 --quiet
+        run: |
+          candidate="${{ inputs.candidate }}"; worlds="${{ inputs.worlds }}"
+          if [ -z "$candidate" ]; then
+            candidate=$(sed -n 's/^candidate: *//p' benchmarks/candidates/RUN)
+            worlds=$(sed -n 's/^worlds: *//p' benchmarks/candidates/RUN)
+          fi
+          python benchmarks/run_candidate.py "$candidate" --worlds "${worlds:-16}" --jobs 3 --quiet
       - uses: actions/upload-artifact@v4
         with:
-          name: candidate-${{ inputs.candidate }}
+          name: candidate-results
           path: benchmarks/candidates/results/
           retention-days: 14
