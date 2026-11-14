@@ -22,7 +22,7 @@ Configuration (one for every brand, no per-brand tuning):
     saturation   LogisticSaturation()
     seasonality  yearly_seasonality=2
     priors       library defaults
-    sampler      NUTS, 4 chains, 1000 tune + 1000 draws, target_accept 0.9, seed 11
+    sampler      NUTS, 4 chains run sequentially, 1000 tune + 1000 draws, target_accept 0.9, seed 11
     ROAS         incrementality.contribution_over_spend("all_time"), mean and 5-95% range
     plan         BudgetOptimizerWrapper.optimize_budget over the last 52 weeks, weekly budget equal to
                  the historical total, each channel bounded to [0, 3x] its historical weekly spend
@@ -53,7 +53,9 @@ def _fit(df: pd.DataFrame, info: dict, draws: int, tune: int, chains: int):
         yearly_seasonality=2,
     )
     cols = [info["date_col"], *info["media"], *info["controls"]]
-    mmm.fit(df[cols], df[info["target"]], draws=draws, tune=tune, chains=chains,
+    # cores=1: chains run one after another. The benchmark runner already fits brands in parallel
+    # worker processes, and a worker process may not start sampling processes of its own.
+    mmm.fit(df[cols], df[info["target"]], draws=draws, tune=tune, chains=chains, cores=1,
             target_accept=0.9, random_seed=SEED, progressbar=False)
     return mmm
 

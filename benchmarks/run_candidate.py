@@ -81,6 +81,8 @@ def main():
             if err:
                 failures.append({"track": track, "world": i, "error": err})
             print(f"[{n}/{len(jobs)}] {track} world {i}: {'FAILED' if err else 'ok'} in {secs}s", flush=True)
+            if err:  # an error message is not a score, so it is shown even with --quiet
+                print(f"    {err[:500]}", flush=True)
 
     import pycausalsim
     versions = {"pycausalsim": pycausalsim.__version__}
@@ -102,6 +104,8 @@ def main():
     print(f"wrote {path.relative_to(HERE.parent)}; {len(failures)} failed brand(s)")
     if not a.quiet:
         print(json.dumps(result["tracks"], indent=2))
+    if failures:
+        sys.exit(f"{len(failures)} of {len(jobs)} brands failed to fit; the run is incomplete")
 
 
 if __name__ == "__main__":
