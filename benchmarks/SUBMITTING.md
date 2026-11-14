@@ -43,3 +43,24 @@ library and want an entry corrected or removed, open an issue.
 
 Simulated brands are kinder than real data. A good score shows a model can recover
 known returns under these conditions; it does not show it is right about your brand.
+
+## Candidates
+
+An adapter for another library starts as a candidate, not as a leaderboard entry. It lives
+in `benchmarks/candidates/` and is graded with
+
+```bash
+python benchmarks/run_candidate.py pymc_marketing --worlds 16 --jobs 3
+```
+
+which writes its scores to `benchmarks/candidates/results/` (not committed) and leaves
+`LEADERBOARD.md` untouched. A candidate becomes an entry when three things are true:
+
+1. The full run completes on every brand of every track it enters, at the settings stated
+   in the adapter.
+2. The adapter uses the library as its own documentation recommends, with one
+   configuration for every brand.
+3. The library's maintainers have been sent the adapter and its scores and given time to
+   correct the configuration.
+
+Until then a candidate's scores are not published.

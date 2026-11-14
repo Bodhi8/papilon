@@ -1,0 +1,47 @@
+name: benchmark candidate
+
+# Grades a candidate leaderboard entry (an adapter for another library that is still being
+# verified). Started by hand only. Scores are kept out of the job log and uploaded as an
+# artifact, so an unverified result is never shown on the run page. Nothing is committed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate:
+        description: "Candidate entry to grade"
+        required: true
+        default: "pymc_marketing"
+        type: choice
+        options: ["pymc_marketing"]
+      worlds:
+        description: "Brands per track (16 matches the leaderboard)"
+        required: true
+        default: "16"
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          pip install -e .
+          pip install "pycausalsim==0.6.0" pymc-marketing
+          pip list | grep -iE "^(pymc|pymc-marketing|pytensor|papilon|pycausalsim|numpy|pandas|arviz) "
+      - name: Grade the candidate
+        env:
+          MPLBACKEND: Agg
+          OMP_NUM_THREADS: "1"
+        run: python benchmarks/run_candidate.py "${{ inputs.candidate }}" --worlds "${{ inputs.worlds }}" --jobs 3 --quiet
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-${{ inputs.candidate }}
+          path: benchmarks/candidates/results/
+          retention-days: 14
