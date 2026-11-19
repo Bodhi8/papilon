@@ -315,6 +315,8 @@ def make_llm(spec, box=None):
 
 # ------------------------------------------------------------------------ chat
 
+_DECLINED = "The user declined this action. Do not retry it; answer without it or suggest an alternative."
+
 class Chat:
     """A conversation with a fitted model.
 
@@ -337,16 +339,67 @@ class Chat:
         self.confirm = confirm
         self.history: list = []
         self._pending: list | None = None
+        self._queue: list = []
         self._start = 0
 
     # public -------------------------------------------------------------
     def ask(self, question: str) -> Reply:
         """Answer one question, calling as many tools as it needs."""
+        self.start(question)
+        return self._run()
+
+    def start(self, question: str) -> None:
+        """Begin a question without running anything; drive it with :meth:`step`.
+
+        For interfaces that show each tool call as it happens::
+
+            chat.start("Plan next quarter")
+            while not isinstance(out := chat.step(), Reply):
+                show(out)            # {"type": "plan", "calls": [...]} or {"type": "tool", ...}
+        """
         if self._pending:
             raise RuntimeError("an action is waiting for approval: call approve() or decline() first")
         self.history.append({"role": "user", "text": str(question)})
         self._start = len(self.history) - 1
-        return self._loop()
+        self._queue = []
+
+    def step(self):
+        """Advance by one unit of work.
+
+        Returns ``{"type": "plan", "calls": [...]}`` when the model chose its
+        next tool calls, ``{"type": "tool", "tool", "input", "result"}`` after
+        running one, or the final :class:`Reply` (which may be a request for
+        approval, with ``pending`` set).
+        """
+        if self._pending:
+            return self._pending_reply()
+        if self._queue:
+            c = self._queue.pop(0)
+            mutating = getattr(self.box, "mutating", frozenset())
+            if c["name"] in mutating and not c.get("approved"):
+                if self.confirm is None:
+                    self._pending = [c] + self._queue
+                    self._queue = []
+                    return self._pending_reply()
+                if not self.confirm(c["name"], c["input"]):
+                    self._record(c, {"error": _DECLINED})
+                    return {"type": "tool", "tool": c["name"], "input": c["input"], "result": self.history[-1]["result"]}
+            self._record(c, self.box.call(c["name"], c["input"]))
+            return {"type": "tool", "tool": c["name"], "input": c["input"], "result": self.history[-1]["result"]}
+        n_calls = sum(1 for ev in self.history[self._start:] if ev["role"] == "tool")
+        fmt = getattr(self.llm, "tool_format", "tool_use")
+        out = self.llm.complete(self.system, self.history, self.box.specs(fmt))
+        calls = out.get("tool_calls") or []
+        if calls and n_calls + len(calls) > self.max_steps:
+            calls = []
+            out["text"] = ((out.get("text") or "") + "\n\nI stopped after "
+                           f"{self.max_steps} tool calls without finishing. Ask a narrower question.").strip()
+        self.history.append({"role": "assistant", "text": out.get("text") or "", "tool_calls": calls})
+        if not calls:
+            return self._finish(out.get("text") or "")
+        self._queue = list(calls)
+        return {"type": "plan", "calls": [{"tool": c["name"], "input": c["input"]} for c in calls],
+                "text": out.get("text") or ""}
 
     def run_task(self, name: str) -> Reply:
         """Run one of the agent tasks in ``TASKS`` by name."""
@@ -354,16 +407,18 @@ class Chat:
             raise KeyError(f"unknown task {name!r}; tasks are {sorted(TASKS)}")
         return self.ask(TASKS[name])
 
-    def approve(self) -> Reply:
-        """Run the action the last reply asked about, then carry on."""
-        return self._resolve(True)
+    def approve(self, run: bool = True):
+        """Run the action the last reply asked about, then carry on to the answer.
+        With ``run=False`` nothing runs yet; continue with :meth:`step`."""
+        return self._resolve(True, run)
 
-    def decline(self) -> Reply:
-        """Refuse the action the last reply asked about, then carry on without it."""
-        return self._resolve(False)
+    def decline(self, run: bool = True):
+        """Refuse the action the last reply asked about, then carry on without it.
+        With ``run=False`` nothing runs yet; continue with :meth:`step`."""
+        return self._resolve(False, run)
 
     def reset(self) -> None:
-        self.history, self._pending = [], None
+        self.history, self._pending, self._queue = [], None, []
 
     def transcript(self) -> str:
         """The conversation as Markdown, tool calls included: a record of how each answer was reached."""
@@ -383,40 +438,22 @@ class Chat:
         return [{"tool": ev["name"], "input": ev["input"], "result": ev["result"]}
                 for ev in self.history[self._start:] if ev["role"] == "tool"]
 
-    def _run_calls(self, calls: list):
-        """Run tool calls in order; stop at the first one that needs approval."""
-        mutating = getattr(self.box, "mutating", frozenset())
-        for i, c in enumerate(calls):
-            if c["name"] in mutating and not c.get("approved"):
-                if self.confirm is None:
-                    self._pending = calls[i:]
-                    return False
-                if not self.confirm(c["name"], c["input"]):
-                    self._record(c, {"error": "The user declined this action. Do not retry it; "
-                                              "answer without it or suggest an alternative."})
-                    continue
-            self._record(c, self.box.call(c["name"], c["input"]))
-        return True
-
     def _record(self, call, result):
         self.history.append({"role": "tool", "id": call["id"], "name": call["name"],
                              "input": call["input"], "result": result})
 
-    def _resolve(self, approved: bool) -> Reply:
+    def _resolve(self, approved: bool, run: bool = True):
         if not self._pending:
             raise RuntimeError("nothing is waiting for approval")
         calls, self._pending = self._pending, None
         first = dict(calls[0])
         if approved:
             first["approved"] = True
-            rest = [first] + calls[1:]
+            self._queue = [first] + calls[1:]
         else:
-            self._record(first, {"error": "The user declined this action. Do not retry it; "
-                                          "answer without it or suggest an alternative."})
-            rest = calls[1:]
-        if not self._run_calls(rest):
-            return self._pending_reply()
-        return self._loop()
+            self._record(first, {"error": _DECLINED})
+            self._queue = calls[1:]
+        return self._run() if run else None
 
     def _pending_reply(self) -> Reply:
         c = self._pending[0]
@@ -424,22 +461,11 @@ class Chat:
                      steps=self._steps(), backend=self.llm.name,
                      pending={"tool": c["name"], "input": c["input"]})
 
-    def _loop(self) -> Reply:
-        fmt = getattr(self.llm, "tool_format", "tool_use")
-        tools = self.box.specs(fmt)
+    def _run(self) -> Reply:
         while True:
-            n_calls = sum(1 for ev in self.history[self._start:] if ev["role"] == "tool")
-            out = self.llm.complete(self.system, self.history, tools)
-            calls = out.get("tool_calls") or []
-            if calls and n_calls + len(calls) > self.max_steps:
-                calls = []
-                out["text"] = ((out.get("text") or "") + "\n\nI stopped after "
-                               f"{self.max_steps} tool calls without finishing. Ask a narrower question.").strip()
-            self.history.append({"role": "assistant", "text": out.get("text") or "", "tool_calls": calls})
-            if not calls:
-                return self._finish(out.get("text") or "")
-            if not self._run_calls(calls):
-                return self._pending_reply()
+            out = self.step()
+            if isinstance(out, Reply):
+                return out
 
     def _finish(self, text: str) -> Reply:
         steps = self._steps()

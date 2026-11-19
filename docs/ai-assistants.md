@@ -126,6 +126,21 @@ one and returns a reply whose `pending` field names the tool and its input; call
 `chat.approve()` or `chat.decline()` to carry on. Pass `confirm=lambda name, args: ...`
 to decide in code instead. `max_steps` (default 8) caps the tool calls behind one answer.
 
+### Showing progress
+
+For an interface that shows each tool call as it runs, start a question and step it:
+
+```python
+chat.start("Plan next quarter's budget")
+while True:
+    out = chat.step()            # {"type": "plan", ...}, {"type": "tool", ...} or the final Reply
+    if isinstance(out, Reply):
+        break
+```
+
+`chat.approve(run=False)` and `chat.decline(run=False)` answer an approval request
+without running on, so the stepping can continue.
+
 ### In a terminal
 
 ```bash
