@@ -114,7 +114,8 @@ def _flatten(x, label, out):
     elif isinstance(x, str):
         out.extend((v, label) for _, v, _, _ in _numbers_in(x))
     elif isinstance(x, dict):
-        for v in x.values():
+        for k, v in x.items():
+            _flatten(str(k), label, out)
             _flatten(v, label, out)
     elif isinstance(x, (list, tuple)):
         for v in x:
