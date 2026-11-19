@@ -54,6 +54,20 @@ macOS, and fitted models can be saved, tracked, monitored and reported.
 - Optional extras: `mlflow`, `snowflake`, `bigquery`, `sql`, `all`.
 - `make_synthetic_geo_mmm` for testing regional models.
 
+### Added: chat and agents
+- `papilon.chat.Chat`: ask a fitted model questions in plain English. A tool-use loop over
+  `ToolBox` with pluggable language models: the built-in `OfflineAgent` (no key, no network,
+  deterministic), `AnthropicLLM` and `OpenAILLM` (any chat completions API with function
+  calling, Ollama and other local servers included). Standard library only.
+- Agent tasks (`TASKS`, `Chat.run_task`): `overview`, `audit` (fit, cautions, backtest) and
+  `plan_quarter` (overview, plan, stability, lift test to run first, forecast under the plan).
+- `check_grounding`: every number in a reply is traced to a tool result or the question;
+  numbers it cannot trace are listed in `Reply.grounding["unsupported"]`.
+- Approval for tools that change the model (`ToolBox.mutating`): `confirm=` callback, or
+  `Reply.pending` with `Chat.approve()` / `Chat.decline()`. A step cap (`max_steps`).
+- `python -m papilon.chat`: chat in a terminal, or run one task with `--task`.
+- The `optimize_budget` tool result includes the `total` the plan was built for.
+
 ### Changed
 - `GateResult` gains `carryover`, `saturation`, `time_varying`, `method`, `modes`, `passed`.
 - `posterior_curves()` adds `kernel` and `saturation`; `beta` is the effect as of the last period.
