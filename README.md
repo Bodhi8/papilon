@@ -180,8 +180,17 @@ video last in about a second.
 **AI assistants.** `papilon.ai.ToolBox(model, graph=g)` exposes the model as tools with
 JSON schemas in the layouts chat model APIs accept; every result carries the caveats that
 apply to it, decided by fixed rules. `python -m papilon.mcp_server --data ...` serves
-the same tools over the Model Context Protocol. Papilon calls no language model and
-sends no data anywhere: the assistant writes sentences, the model supplies the numbers.
+the same tools over the Model Context Protocol.
+
+**Chat and agent tasks.** `papilon.chat.Chat(box)` lets you ask the model questions in
+plain English. The built-in offline agent needs no key and no network: it picks the tools,
+chains several for a task such as `run_task("plan_quarter")` (overview, plan, stability,
+which lift test first, a forecast under the plan), and writes the answer from the results.
+Pass `llm="anthropic"`, `"openai:<model>"` or `"ollama:<model>"` to let a language model
+drive the same tools. Every reply carries a grounding check that traces each number in the
+answer to a tool result and lists any that it cannot. `python -m papilon.chat --data ...`
+chats in a terminal. Papilon calls a language model only when you choose one; by default
+nothing leaves your machine.
 
 `examples/checkable_mmm.py` runs all of this in about a minute. The methods are
 described in [RFC 002](docs/design/002-checkable-mmm.md).

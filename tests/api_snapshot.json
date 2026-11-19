@@ -102,6 +102,8 @@
    "recommend_tests",
    "test_sd",
    "test_weeks",
+   "test_share",
+   "payback_periods",
    "carryover_candidates",
    "model_kwargs",
    "plan_kwargs",
@@ -349,6 +351,105 @@
    "visualize"
   ]
  },
+ "papilon.chat.AnthropicLLM": {
+  "methods": {
+   "complete": [
+    "system",
+    "history",
+    "tools"
+   ],
+   "messages": [
+    "history"
+   ]
+  },
+  "params": [
+   "model",
+   "api_key",
+   "max_tokens",
+   "base_url",
+   "timeout"
+  ]
+ },
+ "papilon.chat.Chat": {
+  "methods": {
+   "approve": [],
+   "ask": [
+    "question"
+   ],
+   "decline": [],
+   "reset": [],
+   "run_task": [
+    "name"
+   ],
+   "transcript": []
+  },
+  "params": [
+   "box",
+   "llm",
+   "system",
+   "max_steps",
+   "confirm"
+  ]
+ },
+ "papilon.chat.OfflineAgent": {
+  "methods": {
+   "complete": [
+    "system",
+    "history",
+    "tools"
+   ]
+  },
+  "params": [
+   "box"
+  ]
+ },
+ "papilon.chat.OpenAILLM": {
+  "methods": {
+   "complete": [
+    "system",
+    "history",
+    "tools"
+   ],
+   "messages": [
+    "system",
+    "history"
+   ]
+  },
+  "params": [
+   "model",
+   "api_key",
+   "base_url",
+   "timeout"
+  ]
+ },
+ "papilon.chat.Reply": {
+  "methods": {
+   "to_dict": [],
+   "to_json": []
+  },
+  "params": [
+   "text",
+   "steps",
+   "grounding",
+   "backend",
+   "pending"
+  ]
+ },
+ "papilon.chat.TASKS": {
+  "params": null
+ },
+ "papilon.chat.check_grounding": {
+  "params": [
+   "text",
+   "sources"
+  ]
+ },
+ "papilon.chat.make_llm": {
+  "params": [
+   "spec",
+   "box"
+  ]
+ },
  "papilon.count_microstates": {
   "params": [
    "data"
@@ -485,6 +586,8 @@
    "recommend_tests",
    "test_sd",
    "test_weeks",
+   "test_share",
+   "payback_periods",
    "carryover_candidates",
    "model_kwargs",
    "plan_kwargs",

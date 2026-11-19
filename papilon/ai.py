@@ -174,6 +174,10 @@ class ToolBox:
     >>> box.call("get_roi", {})           # run a tool call the model asked for
     """
 
+    system_prompt = SYSTEM_PROMPT
+    #: tools that change the model; :class:`papilon.chat.Chat` asks before running them
+    mutating = frozenset()
+
     def __init__(self, model, graph=None) -> None:
         model._require_fit()
         self.model, self.graph = model, graph
@@ -241,7 +245,7 @@ class ToolBox:
             cav.append(f"The plan beats the current mix in only {s['prob_better']:.0%} of posterior draws.")
         cav.append("Gains are steady-state: cuts cost sales immediately and delayed channels pay back later. "
                    "Play the plan forward with pycausalsim.futures.media_plan_scm before moving money.")
-        return {"plan": plan, "summary": s}, cav
+        return {"plan": plan, "summary": s, "total": total}, cav
 
     def _t_evaluate_plan(self, a):
         spend = {self._channel(c): v for c, v in a["spend"].items()}
