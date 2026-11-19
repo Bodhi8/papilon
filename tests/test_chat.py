@@ -77,7 +77,7 @@ def test_actions_that_change_the_model_wait_for_approval():
     box = FakeBox()
     chat = Chat(box, llm=Scripted(call("change", x=1), {"text": "done", "tool_calls": []}))
     r = chat.ask("change it")
-    assert r.pending == {"tool": "change", "input": {"x": 1}} and box.calls == []
+    assert r.pending == {"tool": "change", "input": {"x": 1}, "summary": None} and box.calls == []
     with pytest.raises(RuntimeError):
         chat.ask("something else")
     r = chat.approve()

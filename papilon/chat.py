@@ -457,9 +457,12 @@ class Chat:
 
     def _pending_reply(self) -> Reply:
         c = self._pending[0]
-        return Reply(text=f"I want to run `{c['name']}`, which changes the model. Approve or decline?",
+        describe = getattr(self.box, "describe_call", None)
+        summary = describe(c["name"], c["input"]) if describe else None
+        return Reply(text=f"I want to run `{c['name']}`, which changes the model"
+                          + (f": {summary}" if summary else "") + ". Approve or decline?",
                      steps=self._steps(), backend=self.llm.name,
-                     pending={"tool": c["name"], "input": c["input"]})
+                     pending={"tool": c["name"], "input": c["input"], "summary": summary})
 
     def _run(self) -> Reply:
         while True:
