@@ -5,7 +5,7 @@
 # Papilon
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version 1.1.0">
   <img src="https://img.shields.io/badge/python-3.10+-green.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg" alt="Apache 2.0 license">
 </p>
@@ -117,7 +117,7 @@ more than the brand has sustained before. Against the true response curves it ad
 $4,400 a week in sales, about 79% of the best possible reallocation ($5,600). The 0.3
 optimizer, on the same fit, moves $38,000 for $800.
 
-## The scenario planner: no code
+## The scenario planner: no code (new in 1.1)
 
 `scenario_planner` writes a fitted model into one HTML file that anyone can open in a
 browser and plan with. Nothing to install, no server, nothing sent anywhere.
@@ -354,7 +354,7 @@ If you use Papilon in research, please cite:
 
 ```
 Curry, B. (2026). Papilon: Bayesian marketing mix modeling with gated importance
-sampling (Version 1.0.0). https://github.com/Bodhi8/papilon
+sampling (Version 1.1.0). https://github.com/Bodhi8/papilon
 ```
 
 Built by [Brian Curry](https://vector1.ai), Vector1 Research. Papilon, PyCausalSim and
