@@ -18,4 +18,6 @@
 
 ::: papilon.report
 
+::: papilon.planner
+
 ::: papilon.ai

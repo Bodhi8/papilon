@@ -25,6 +25,7 @@ nav:
       - The knowledge graph: knowledge-graph.md
       - Checking the model: checking.md
       - Planning and forecasting: forecasting.md
+      - The scenario planner: scenario-planner.md
       - The learning loop: loop.md
       - Running in production: production.md
       - AI assistants: ai-assistants.md
