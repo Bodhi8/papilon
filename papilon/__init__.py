@@ -23,6 +23,7 @@ from .loop import Loop
 from .mmm import MMM
 from .mmm.geo import GeoMMM
 from .optimizer import grid_search_optimize
+from .planner import scenario_planner
 from .relationships import analyze_relationships
 from .simulation import simulate_kde_scenarios
 from .states import count_microstates, macrostate_entropy
@@ -46,4 +47,5 @@ __all__ = [
     "infer_causal_structure",
     "discover_structure",
     "grid_search_optimize",
+    "scenario_planner",
 ]

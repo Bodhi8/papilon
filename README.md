@@ -47,7 +47,7 @@ pip install "papilon[mlflow,snowflake,mcp]"   # optional: tracking, warehouse, A
 | Regions | `GeoMMM`: shared curves, regional effects pooled toward a common effect, integrated exactly |
 | Inference | importance sampling with a quality gate, mixture proposals over all modes, tempered SMC fallback |
 | Checking | backtest, self-check on simulated copies of the brand, confounding stress test, open leaderboard |
-| Planning | downside-protected plans, plan stability and bagging, forward forecasts, paired scenarios |
+| Planning | downside-protected plans, plan stability and bagging, forward forecasts, paired scenarios, a no-code scenario planner |
 | Learning | `Loop`: refresh, score, recommend the most valuable test, explore between indistinguishable channels |
 | Structure | knowledge graph with audit, back-door identification, PC causal discovery against the data |
 | Production | data checks, SQL, Snowflake and BigQuery loaders, save and load without pickles, MLflow, drift monitoring, HTML reports, AI tools and an MCP server |
@@ -116,6 +116,35 @@ The plan moves $23,600 a week toward online video and flags that $70,900 a week 
 more than the brand has sustained before. Against the true response curves it adds
 $4,400 a week in sales, about 79% of the best possible reallocation ($5,600). The 0.3
 optimizer, on the same fit, moves $38,000 for $800.
+
+## The scenario planner: no code
+
+`scenario_planner` writes a fitted model into one HTML file that anyone can open in a
+browser and plan with. Nothing to install, no server, nothing sent anywhere.
+
+```python
+pp.scenario_planner(model, "planner.html", currency="$", units="thousands")
+```
+
+```bash
+python -m papilon.planner --data sales.csv --target sales --date week \
+    --media search,social,video --controls price -o planner.html
+```
+
+Pick a starting period and a goal: the best mix for a fixed budget (protecting the
+downside by default, or maximizing the expected outcome), the most spend whose total
+ROI stays above a target, each channel up to a target marginal ROI, or a mix built with
+sliders. Set how far each channel may move, lock channels, and read the result with its
+90% range and the chance it beats the starting mix, alongside every channel's response
+curve with the spend the brand has never sustained shaded. Save scenarios to compare
+side by side, export CSV, or share a link that reopens them. A second tab shows the
+fit, the drivers of the outcome, returns with their ranges, and Papilon's cautions.
+
+The page plans in the browser on 500 posterior draws of the same curves
+`optimize_budget` uses, in tens of milliseconds, and the tests check that its plans do
+at least as well as the Python optimizer on those draws. It covers the planning modes of
+Google's Meridian Scenario Planner without Drive, Colab or Looker Studio. See
+[the guide](docs/scenario-planner.md).
 
 ## The learning loop (new in 1.0)
 

@@ -53,9 +53,15 @@ Repository = "https://github.com/Bodhi8/papilon"
 Issues = "https://github.com/Bodhi8/papilon/issues"
 Changelog = "https://github.com/Bodhi8/papilon/blob/main/CHANGELOG.md"
 
+[project.scripts]
+papilon-planner = "papilon.planner:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["papilon*"]
+
+[tool.setuptools.package-data]
+papilon = ["planner_assets/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

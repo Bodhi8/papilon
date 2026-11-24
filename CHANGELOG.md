@@ -36,6 +36,15 @@ macOS, and fitted models can be saved, tracked, monitored and reported.
   a small budget-neutral exploration pulse between the channels the model can least tell
   apart. `pycausalsim.futures.compare_loops` grades it against known truth.
 
+### Added: scenario planner
+- `scenario_planner(model, path)`: a no-code planner in one self-contained HTML file. Fixed
+  budgets (downside-protected or expected), target total ROI, target marginal ROI and
+  hand-built mixes; channel limits and locks; starting periods; 90% ranges and the chance
+  of beating the starting mix; response curves with unsustained spend shaded; saved
+  scenarios, CSV export and share links; a model results tab. Works for `MMM` and
+  `GeoMMM`. `python -m papilon.planner` and the `papilon-planner` script build one from a
+  CSV or a saved model; `planner_data` returns the same content as data.
+
 ### Added: causal structure
 - `discover_structure`: the PC algorithm with partial-correlation tests, background tiers and
   forbidden edges, after removing trend and season.

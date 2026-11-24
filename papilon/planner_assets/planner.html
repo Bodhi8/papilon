@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="generator" content="Papilon scenario planner">
+<title>{{TITLE}}</title>
+<style>
+/*{{STYLE}}*/
+</style>
+</head>
+<body>
+<div class="app viz-root">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 15c-3-7-9-11-12-9s0 10 5 12c-4 2-5 7-2 8s7-3 9-8c2 5 6 9 9 8s2-6-2-8c5-2 8-10 5-12s-9 2-12 9z"/></svg>
+      <div>
+        <h1 id="title">{{TITLE}}</h1>
+        <p class="meta" id="meta"></p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-plan" aria-selected="true" aria-controls="panel-plan">Scenario planner</button>
+      <button role="tab" id="tab-model" aria-selected="false" aria-controls="panel-model">Model results</button>
+      <button role="tab" id="tab-about" aria-selected="false" aria-controls="panel-about">How it works</button>
+    </nav>
+  </header>
+
+  <section id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" class="panel plan">
+    <aside class="controls" aria-label="Scenario settings">
+      <div class="group">
+        <h2><span class="step">1</span>Start from</h2>
+        <select id="window" aria-label="Starting spend"></select>
+        <p class="hint" id="start-total"></p>
+      </div>
+
+      <div class="group">
+        <h2><span class="step">2</span>Goal</h2>
+        <div class="modes" role="radiogroup" aria-label="Goal">
+          <label class="mode"><input type="radio" name="mode" value="fixed" checked>
+            <span><b>Best mix for a fixed budget</b><small>Same total, better split across channels</small></span></label>
+          <label class="mode"><input type="radio" name="mode" value="target_roi">
+            <span><b>Grow while ROI holds</b><small>The most spend whose total ROI stays above a target</small></span></label>
+          <label class="mode"><input type="radio" name="mode" value="target_mroi">
+            <span><b>Spend to a marginal return</b><small>Each channel up to where the next dollar returns a target</small></span></label>
+          <label class="mode"><input type="radio" name="mode" value="manual">
+            <span><b>Build my own</b><small>Set every channel's spend and see the result</small></span></label>
+        </div>
+
+        <div class="mode-opts" data-for="fixed">
+          <label class="field"><span>Budget per <span class="per"></span></span>
+            <span class="money-input"><span class="cur"></span><input id="total" type="number" min="0" step="any" inputmode="decimal"></span></label>
+          <div class="chips" id="total-chips"></div>
+          <fieldset class="risk">
+            <legend>When the model is uncertain</legend>
+            <label><input type="radio" name="objective" value="quantile" checked> Protect the downside <em>recommended</em>
+              <small>Best plan if returns land at the low end of their range (10th percentile)</small></label>
+            <label><input type="radio" name="objective" value="mean"> Maximize the expected outcome
+              <small>Best plan if the model's central estimates are right</small></label>
+          </fieldset>
+        </div>
+        <div class="mode-opts" data-for="target_roi" hidden>
+          <label class="field">Keep total ROI at or above
+            <input id="target-roi" type="number" min="0" step="0.05" value="1"></label>
+        </div>
+        <div class="mode-opts" data-for="target_mroi" hidden>
+          <label class="field">Stop when the next dollar returns
+            <input id="target-mroi" type="number" min="0" step="0.05" value="1"></label>
+        </div>
+        <div class="mode-opts" data-for="manual" hidden>
+          <div id="sliders"></div>
+          <button class="link" id="copy-start">Reset to the starting mix</button>
+        </div>
+      </div>
+
+      <div class="group" id="limits-group">
+        <h2><span class="step">3</span>Channel limits</h2>
+        <label class="field"><span>Each channel may move up to</span>
+          <span class="row"><input id="max-change" type="range" min="5" max="200" step="5" value="50"><output id="max-change-out">±50%</output></span></label>
+        <label class="check"><input id="no-limit" type="checkbox"> No limit on change</label>
+        <label class="field">Never above
+          <span class="row"><input id="cap" type="number" min="1" max="20" step="0.5" value="3"><span>× its historical average</span></span></label>
+        <details>
+          <summary>Per-channel limits and locks</summary>
+          <div id="channel-limits"></div>
+        </details>
+      </div>
+
+      <div class="group">
+        <h2><span class="step">4</span>Totals cover</h2>
+        <span class="row"><input id="horizon" type="number" min="1" step="1"><span class="per-plural"></span></span>
+      </div>
+
+    </aside>
+
+    <main class="results" aria-live="polite">
+      <div class="headline">
+        <div>
+          <h2 id="scenario-title"></h2>
+          <p class="meta" id="scenario-meta"></p>
+        </div>
+        <div class="actions">
+          <button id="save" class="primary">Save scenario</button>
+          <button id="share">Copy link</button>
+          <button id="csv">Download CSV</button>
+          <p class="hint" id="action-msg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <div id="notes"></div>
+      <div class="tiles" id="tiles"></div>
+
+      <section class="card">
+        <div class="card-head"><h3>Spend by channel</h3>
+          <div class="legend"><span class="key ring"></span>Starting mix <span class="key dot"></span>Scenario</div></div>
+        <div id="dumbbell" class="chart"></div>
+        <div class="table-wrap"><table id="plan-table" class="t"></table></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h3>Response curves</h3>
+          <div class="legend"><span class="key band"></span>90% range <span class="key ring"></span>Start <span class="key dot"></span>Scenario <span class="key hatch"></span>Beyond sustained history</div></div>
+        <p class="hint">Contribution per <span class="per"></span> at a steady level of spend. Past the hatched line the brand has never sustained that spend, so the curve there is extrapolated.</p>
+        <div id="curves" class="curves"></div>
+      </section>
+
+      <section class="card" id="saved-card" hidden>
+        <div class="card-head"><h3>Saved scenarios</h3></div>
+        <div class="table-wrap"><table id="saved-table" class="t"></table></div>
+      </section>
+    </main>
+  </section>
+
+  <section id="panel-model" role="tabpanel" aria-labelledby="tab-model" class="panel model" hidden>
+    <div class="tiles" id="model-tiles"></div>
+    <div id="cautions"></div>
+    <section class="card" id="fit-card">
+      <div class="card-head"><h3>Actual and fitted <span id="target-name"></span></h3>
+        <div class="legend"><span class="key line muted"></span>Actual <span class="key line accent"></span>Fitted</div></div>
+      <div id="fit" class="chart"></div>
+    </section>
+    <section class="card" id="decomp-card">
+      <div class="card-head"><h3>What drove the outcome</h3></div>
+      <p class="hint">Share of the fitted total over the whole history.</p>
+      <div id="decomp" class="chart"></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h3>Return on spend by channel</h3>
+        <div class="legend"><span class="key dot"></span>ROI with 90% range <span class="key diamond"></span>Marginal ROI</div></div>
+      <p class="hint">ROI is each channel's modeled contribution over its spend across the history. Marginal ROI is the return on the next dollar at historical spend.</p>
+      <div id="forest" class="chart"></div>
+      <div class="table-wrap"><table id="roi-table" class="t"></table></div>
+    </section>
+  </section>
+
+  <section id="panel-about" role="tabpanel" aria-labelledby="tab-about" class="panel about" hidden>
+    <article class="prose" id="about"></article>
+  </section>
+
+  <footer class="foot">Built with <a href="https://github.com/Bodhi8/papilon">Papilon</a>. Everything is computed in this page; nothing is sent anywhere.</footer>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+</div>
+<script type="application/json" id="papilon-data">{{DATA}}</script>
+<script>
+/*{{ENGINE}}*/
+</script>
+<script>
+/*{{UI}}*/
+</script>
+</body>
+</html>

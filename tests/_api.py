@@ -3,7 +3,7 @@ import importlib
 import inspect
 
 MODULES = ["papilon", "papilon.mmm", "papilon.ai", "papilon.chat", "papilon.io", "papilon.discovery", "papilon.persist",
-           "papilon.report", "papilon.tracking", "papilon.loop"]
+           "papilon.report", "papilon.tracking", "papilon.loop", "papilon.planner"]
 
 
 def params(obj):

@@ -26,7 +26,8 @@ the model has seen, and `refit_recommended`.
 
 **Report.** `papilon.report.report(model, "report.html", graph=g)` writes one HTML file
 with charts, returns, the plan and its stability, the graph audit and every caution,
-for people who will never run Python.
+for people who will never run Python. `pp.scenario_planner(model, "planner.html")`
+writes one they can plan with; see [the scenario planner](scenario-planner.md).
 
 **Inference you can rely on.** Each fit reports a verdict. `ACCEPT` means importance
 sampling passed its effective-sample-size gate; `SMC` means it did not and the tempered

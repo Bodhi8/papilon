@@ -372,15 +372,23 @@
  },
  "papilon.chat.Chat": {
   "methods": {
-   "approve": [],
+   "approve": [
+    "run"
+   ],
    "ask": [
     "question"
    ],
-   "decline": [],
+   "decline": [
+    "run"
+   ],
    "reset": [],
    "run_task": [
     "name"
    ],
+   "start": [
+    "question"
+   ],
+   "step": [],
    "transcript": []
   },
   "params": [
@@ -792,6 +800,33 @@
    "path"
   ]
  },
+ "papilon.planner.main": {
+  "params": [
+   "argv"
+  ]
+ },
+ "papilon.planner.planner_data": {
+  "params": [
+   "model",
+   "n_draws",
+   "title",
+   "currency",
+   "units",
+   "horizon",
+   "seed"
+  ]
+ },
+ "papilon.planner.scenario_planner": {
+  "params": [
+   "model",
+   "path",
+   "title",
+   "n_draws",
+   "currency",
+   "units",
+   "horizon"
+  ]
+ },
  "papilon.report.plot_decomposition": {
   "params": [
    "model"
@@ -830,6 +865,17 @@
    "plan",
    "graph",
    "title"
+  ]
+ },
+ "papilon.scenario_planner": {
+  "params": [
+   "model",
+   "path",
+   "title",
+   "n_draws",
+   "currency",
+   "units",
+   "horizon"
   ]
  },
  "papilon.shannon_entropy": {

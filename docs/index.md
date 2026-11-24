@@ -14,6 +14,9 @@ that moves budget should be able to show that it is right, and say when it is no
   known returns.
 - **Plan for being wrong.** Budget plans maximize the downside, report whether they
   are stable, and can be played forward week by week.
+- **Hand it to the people who spend.** `pp.scenario_planner(model, "planner.html")`
+  writes a no-code planner in one HTML file: fixed and flexible budgets, ROI and
+  marginal ROI targets, channel limits and saved scenarios, every result with its range.
 - **Learn on purpose.** The learning loop recommends the experiment worth the most to
   the plan, adds a small budget-neutral pulse to separate channels the model cannot
   tell apart, and is itself graded quarter by quarter against known truth.
